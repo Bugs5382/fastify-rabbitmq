@@ -1,0 +1,45 @@
+{
+  "name": "fastify-rabbitmq",
+  "version": "0.0.1",
+  "description": "A Fastify RabbitMQ Plugin Developed in Pure TypeScript using the AMQPLIB",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "lint": "ts-standard",
+    "lint:fix": "ts-standard --fix",
+    "test": "npm run unit && npm run typescript",
+    "update": "npx npm-check-updates -u && npm install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bugs5382/fastify-rabbitmq.git"
+  },
+  "keywords": [
+    "typescript",
+    "rabbitmq",
+    "fastify",
+    "fastify-plugin"
+  ],
+  "author": "Shane Froebel",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Bugs5382/fastify-rabbitmq/issues"
+  },
+  "homepage": "https://github.com/Bugs5382/fastify-rabbitmq#readme",
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "fastify-plugin": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.1",
+    "@types/node": "^20.4.6",
+    "fastify": "^4.21.0",
+    "npm-check-updates": "^16.10.17",
+    "pre-commit": "^1.2.2",
+    "tap": "^16.3.8",
+    "typescript": "^5.1.6"
+  },
+  "pre-commit": []
+}
