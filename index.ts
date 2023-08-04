@@ -1,6 +1,7 @@
-import {FastifyInstance, FastifyPluginAsync} from 'fastify'
+import {FastifyInstance, FastifyPluginCallback} from 'fastify'
 import fp from 'fastify-plugin'
 import amqp, {Channel, ConsumeMessage} from 'amqplib'
+
 
 import FastifyRabbitMQOptions = fastifyRabbitMQ.FastifyRabbitMQOptions;
 
@@ -8,14 +9,18 @@ declare module 'fastify' {
   interface FastifyInstance {
     rabbitmq: fastifyRabbitMQ.FastifyRabbitMQObject & fastifyRabbitMQ.FastifyRabbitMQNestedObject;
   }
+
 }
 
-type fastifyRabbitMQ = FastifyPluginAsync<fastifyRabbitMQ.FastifyRabbitMQObject>;
+type fastifyRabbitMQPlugin = FastifyPluginCallback<
+  NonNullable<fastifyRabbitMQ.FastifyRabbitMQOptions>
+>;
 
 declare namespace fastifyRabbitMQ {
 
   export interface FastifyRabbitMQObject {
-    rabbitmq?: ''
+    publishMessage (sendQueue: string, messageObject: any): void
+    directMessage (sendQueue: string, messageObject: any): void
   }
 
   export interface FastifyRabbitMQNestedObject {
@@ -23,6 +28,7 @@ declare namespace fastifyRabbitMQ {
   }
 
   export interface FastifyRabbitMQOptions {
+    name?: string
     queue: string
     host?: string
     port?: string
@@ -32,17 +38,32 @@ declare namespace fastifyRabbitMQ {
     confirmChannel?: boolean
   }
 
-  export const fastifyRabbitMQ: fastifyRabbitMQ
-  export { fastifyRabbitMQ as default }
+  export const fastifyRabbitMQPlugin: fastifyRabbitMQPlugin
+  export { fastifyRabbitMQPlugin as default }
 
 }
 
-const decorateFastifyInstance = (fastify: FastifyInstance, options: any): void => {
-  const { name, functions } = options
+const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbitMQOptions, functions: any): void => {
+  const { name } = options
 
-  if (typeof name === 'string') {
-    fastify.decorate('rabbitmq', { ...functions })
+  if (name) {
+    if (typeof fastify.rabbitmq === 'undefined') {
+      fastify.decorate('rabbitmq', {...functions})
+    }
+    if (typeof fastify.rabbitmq[name] !== 'undefined') {
+      throw Error('Connection name already registered: ' + name)
+    }
+
+  } else {
+    if (typeof fastify.rabbitmq !== 'undefined') {
+      throw Error('fastify-rabbitmq has already registered')
+    }
   }
+
+  if (typeof fastify.rabbitmq === 'undefined') {
+    fastify.decorate('rabbitmq', {...functions})
+  }
+
 }
 
 const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbitMQOptions): Promise<void> => {
@@ -52,8 +73,8 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
     port = '5672',
     username = 'guest',
     password = 'guest',
-    consumeMessageFn,
-    confirmChannel = false
+    confirmChannel = false,
+    consumeMessageFn
   } = options
 
   const RABBITMQ_FULL_URL = `amqp://${username}:${password}@${host}:${port}`
@@ -84,8 +105,15 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
     channel?.publish('', sendQueue, Buffer.from(msg))
   }
 
+  function directMessage (sendQueue: string, messageObject: any): void {
+    const msg = JSON.stringify(messageObject)
+    channel?.sendToQueue(sendQueue, Buffer.from(msg), {
+      replyTo: queue
+    })
+  }
+
   // make the function available in fastify scope
-  decorateFastifyInstance(fastify, { name: queue, functions: { publishMessage } })
+  decorateFastifyInstance(fastify, options, {publishMessage, directMessage})
 })
 
 export default fastifyRabbit
