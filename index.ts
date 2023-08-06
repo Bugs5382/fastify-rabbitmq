@@ -1,29 +1,29 @@
-import {FastifyInstance, FastifyPluginCallback} from 'fastify'
+import { FastifyInstance, FastifyPluginCallback } from 'fastify'
 import fp from 'fastify-plugin'
-import amqp, {Channel, ConsumeMessage} from 'amqplib'
+import amqp, { Channel, ConsumeMessage } from 'amqplib'
 
-import FastifyRabbitMQOptions = fastifyRabbitMQ.FastifyRabbitMQOptions;
+import FastifyRabbitMQOptions = fastifyRabbitMQ.FastifyRabbitMQOptions
 
 declare module 'fastify' {
   interface FastifyInstance {
-    rabbitmq: fastifyRabbitMQ.FastifyRabbitMQObject & fastifyRabbitMQ.FastifyRabbitMQNestedObject;
+    rabbitmq: fastifyRabbitMQ.FastifyRabbitMQObject & fastifyRabbitMQ.FastifyRabbitMQNestedObject
   }
 
 }
 
 type fastifyRabbitMQPlugin = FastifyPluginCallback<
-  NonNullable<fastifyRabbitMQ.FastifyRabbitMQOptions>
->;
+NonNullable<fastifyRabbitMQ.FastifyRabbitMQOptions>
+>
 
 declare namespace fastifyRabbitMQ {
 
   export interface FastifyRabbitMQObject {
-    publishMessage (sendQueue: string, message: any): void
-    directMessage (sendQueue: string, message: any): void
+    publishMessage: (sendQueue: string, message: any) => void
+    directMessage: (sendQueue: string, message: any) => void
   }
 
   export interface FastifyRabbitMQNestedObject {
-    [namespace: string]: FastifyRabbitMQObject;
+    [namespace: string]: FastifyRabbitMQObject
   }
 
   export interface FastifyRabbitMQOptions {
@@ -33,8 +33,8 @@ declare namespace fastifyRabbitMQ {
     port?: string
     username?: string
     password?: string
-    preProcessMessageFn?: (message: any) => string;
-    consumeMessageFn: (message: ConsumeMessage, channel: Channel) => void;
+    preProcessMessageFn?: (message: any) => string
+    consumeMessageFn: (message: ConsumeMessage, channel: Channel) => void
     confirmChannel?: boolean
   }
 
@@ -55,12 +55,11 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
 
   if (namespace) {
     if (typeof fastify.rabbitmq === 'undefined') {
-      fastify.decorate('rabbitmq', {...functions})
+      fastify.decorate('rabbitmq', { ...functions })
     }
     if (typeof fastify.rabbitmq[namespace] !== 'undefined') {
       throw Error('Connection name already registered: ' + namespace)
     }
-
   } else {
     if (typeof fastify.rabbitmq !== 'undefined') {
       throw Error('fastify-rabbitmq has already registered')
@@ -68,9 +67,8 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
   }
 
   if (typeof fastify.rabbitmq === 'undefined') {
-    fastify.decorate('rabbitmq', {...functions})
+    fastify.decorate('rabbitmq', { ...functions })
   }
-
 }
 
 const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbitMQOptions): Promise<void> => {
@@ -116,7 +114,7 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
    * @since 0.0.1
    * @param message {any} The data you want to send, however it must be a string.
    */
-  function preProcessMessage(message: any): string {
+  function preProcessMessage (message: any): string {
     if (typeof preProcessMessageFn === 'function') {
       return preProcessMessageFn(message)
     } else {
@@ -127,8 +125,8 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
   const channel = await getRabbitChannel(confirmChannel)
 
   await channel?.assertQueue(queue, { durable: false }).then(async () => {
-    return await channel.consume(queue, async (msg:amqp.ConsumeMessage | null): Promise<void> => {
-      await consumeRabbitMessage(<ConsumeMessage>msg, channel)
+    return await channel.consume(queue, async (msg: amqp.ConsumeMessage | null): Promise<void> => {
+      await consumeRabbitMessage(msg as ConsumeMessage, channel)
     }, {
       noAck: true
     })
@@ -159,7 +157,7 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
   /**
    * Decorate Fastify
    */
-  decorateFastifyInstance(fastify, options, {publishMessage, directMessage})
+  decorateFastifyInstance(fastify, options, { publishMessage, directMessage })
 })
 
 export default fastifyRabbit

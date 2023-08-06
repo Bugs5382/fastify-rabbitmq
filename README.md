@@ -1,6 +1,8 @@
 # fastify-rabbitmq
 A Fastify RabbitMQ Plugin Developed in Pure TypeScript. Providing a lot more expandability on the ```amqplib``` package and RabbitMQ functionally.
 
+Note: This NPM package is still going development so things will break. Review the issues list for on going development work.
+
 ## Install
 ```
 npm i fastify-rabbitmq
@@ -44,7 +46,7 @@ The RabbitMQ queue to create.
 
 ### `consumeMessageFn` (required)
 
-How this particular queue will process messages. Rememer that plugins in fastify can not access the request/reply scope. You will need to send your data that you get to a REST API endpoint for it to be processed.
+How this particular queue will process messages. Remember that plugins in fastify can not access the request/reply scope. You will need to send your data that you get to a REST API endpoint for it to be processed.
 
 ```typescript
 consumeMessageFn: async (message, channel: Channel) => {
@@ -83,7 +85,7 @@ By default, it's ```guest``` but pass your RabbitMQ password.
 ### `preProcessMessageFn`
 
 Before your message goes out, do something to your message.
-This is good so all your message go out correctly.
+This is good practice to ensure all your message are uniformed when sending out.
 If not, just make sure you are only sending strings out.
 
 ### `confirmChannel`
