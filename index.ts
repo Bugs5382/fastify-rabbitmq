@@ -19,12 +19,54 @@ NonNullable<fastifyRabbitMQ.FastifyRabbitMQOptions>
 declare namespace fastifyRabbitMQ {
 
   export interface FastifyRabbitMQObject {
+    /**
+     * createBind
+     * @param queue
+     * @param consumeMessageFn
+     */
     createBind: (queue: string, consumeMessageFn: (message: ConsumeMessage | null, channel: Channel) => void) => Promise<void>
+    /**
+     * createBindRPC
+     * @param queue
+     * @param consumeMessageFn
+     */
     createBindRPC: (queue: string, consumeMessageFn: (message: ConsumeMessage | null, channel: Channel) => void) => Promise<string>
+    /**
+     * createExchange
+     * @param exchangeName
+     * @param exchangeType
+     * @param consumeMessageFn
+     */
     createExchange: (exchangeName: string, exchangeType: string, consumeMessageFn: (message: ConsumeMessage | null, channel: Channel) => void) => Promise<void>
+    /**
+     * directMessage
+     * @param sendQueue
+     * @param fromQueue
+     * @param message
+     * @param preProcessMessage
+     */
     directMessage: (sendQueue: string, fromQueue: string, message: any, preProcessMessage: (message: any) => string) => void
+    /**
+     * publishMessage
+     * @param sendQueue
+     * @param message
+     * @param preProcessMessage
+     */
     publishMessage: (sendQueue: string, message: any, preProcessMessage: (message: any) => string) => void
+    /**
+     * publishMessageExchange
+     * @param queue
+     * @param routingKey
+     * @param message
+     * @param preProcessMessage
+     */
     publishMessageExchange: (queue: string, routingKey: string, message: any, preProcessMessage: (message: any) => string) => void
+    /**
+     * publishRPC
+     * @param sendQueue
+     * @param message
+     * @param preProcessMessage
+     */
     publishRPC: (sendQueue: string, message: any, preProcessMessage: (message: any) => string) => Promise<string>
   }
 
