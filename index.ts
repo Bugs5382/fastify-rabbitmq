@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto'
 import { FastifyInstance, FastifyPluginCallback } from 'fastify'
 import fp from 'fastify-plugin'
 import amqp, { Channel, ConsumeMessage } from 'amqplib'
@@ -18,8 +19,13 @@ NonNullable<fastifyRabbitMQ.FastifyRabbitMQOptions>
 declare namespace fastifyRabbitMQ {
 
   export interface FastifyRabbitMQObject {
-    publishMessage: (sendQueue: string, message: any) => void
-    directMessage: (sendQueue: string, message: any) => void
+    createBind: (queue: string, consumeMessageFn: (message: ConsumeMessage | null, channel: Channel) => void) => Promise<void>
+    createBindRPC: (queue: string, consumeMessageFn: (message: ConsumeMessage | null, channel: Channel) => void) => Promise<string>
+    createExchange: (exchangeName: string, exchangeType: string, consumeMessageFn: (message: ConsumeMessage | null, channel: Channel) => void) => Promise<void>
+    directMessage: (sendQueue: string, fromQueue: string, message: any, preProcessMessage: (message: any) => string) => void
+    publishMessage: (sendQueue: string, message: any, preProcessMessage: (message: any) => string) => void
+    publishMessageExchange: (queue: string, routingKey: string, message: any, preProcessMessage: (message: any) => string) => void
+    publishRPC: (sendQueue: string, message: any, preProcessMessage: (message: any) => string) => Promise<string>
   }
 
   export interface FastifyRabbitMQNestedObject {
@@ -27,15 +33,11 @@ declare namespace fastifyRabbitMQ {
   }
 
   export interface FastifyRabbitMQOptions {
-    namespace?: string
-    queue: string
     host?: string
+    namespace?: string
+    password?: string
     port?: string
     username?: string
-    password?: string
-    preProcessMessageFn?: (message: any) => string
-    consumeMessageFn: (message: ConsumeMessage, channel: Channel) => void
-    confirmChannel?: boolean
   }
 
   export const fastifyRabbitMQPlugin: fastifyRabbitMQPlugin
@@ -73,14 +75,10 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
 
 const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbitMQOptions): Promise<void> => {
   const {
-    queue,
     host = 'localhost',
     port = '5672',
     username = 'guest',
-    password = 'guest',
-    confirmChannel = false,
-    consumeMessageFn,
-    preProcessMessageFn
+    password = 'guest'
   } = options
 
   const RABBITMQ_FULL_URL = `amqp://${username}:${password}@${host}:${port}`
@@ -88,76 +86,151 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
   /**
    * getRabbitChannel
    * @since 0.0.1
-   * @param confirmChannel {boolean} Set this to true if you want the channel to always ask for a confirmation that it was sent and received by the other side.
    */
-  async function getRabbitChannel (confirmChannel: boolean): Promise<Channel> {
+  async function getRabbitChannel (): Promise<Channel> {
     const conn = await amqp.connect(RABBITMQ_FULL_URL)
-    return confirmChannel ? await conn.createConfirmChannel() : await conn.createChannel()
+    return await conn.createChannel()
   }
+
+  // create the channel
+  const channel = await getRabbitChannel()
 
   /**
-   * consumeRabbitMessage
-   * Process the incoming message from another queue. This is required.
+   * createBind
    * @since 0.0.1
-   * @param msg {ConsumeMessage} Data from RabbitMQ. It's in a string format; however, you need to interpret the data.
-   * @param channel {Channel} What channel did it comes from and the properties of that channel.
+   * @param queue
+   * @param consumeMessageFn
    */
-  async function consumeRabbitMessage (msg: ConsumeMessage, channel: Channel): Promise<void> {
-    if (typeof consumeMessageFn === 'function') {
-      consumeMessageFn(msg, channel)
-    }
-  }
-
-  /**
-   * preProcessMessage
-   * If the parameter preProcessMessageFn is passed, it will use that function to process the data.
-   * @since 0.0.1
-   * @param message {any} The data you want to send, however it must be a string.
-   */
-  function preProcessMessage (message: any): string {
-    if (typeof preProcessMessageFn === 'function') {
-      return preProcessMessageFn(message)
-    } else {
-      return message
-    }
-  }
-
-  const channel = await getRabbitChannel(confirmChannel)
-
-  await channel?.assertQueue(queue, { durable: false }).then(async () => {
-    return await channel.consume(queue, async (msg: amqp.ConsumeMessage | null): Promise<void> => {
-      await consumeRabbitMessage(msg as ConsumeMessage, channel)
-    }, {
-      noAck: true
+  async function createBind (queue: string, consumeMessageFn: (message: ConsumeMessage | null, channel: Channel) => void): Promise<void> {
+    await channel?.assertQueue(queue, { durable: false }).then(async () => {
+      fastify.log.debug('[X] Waiting Queue (%s)', queue)
+      await channel.consume(queue, async (msg: amqp.ConsumeMessage | null): Promise<void> => {
+        consumeMessageFn(msg, channel)
+      }, {
+        noAck: true
+      })
     })
-  })
+  }
 
   /**
-   * publishMessage
+   * createBindRPC
+   * Create an RPC queue for returning data back to the client from the server.
    * @since 0.0.1
-   * @param sendQueue {string} The target queue.
-   * @param message {any} You can publish anything as long as it goes out over as a string.
+   * @param queue {string}
+   * @param consumeMessageFn {function}
    */
-  function publishMessage (sendQueue: string, message: any): void {
-    channel?.publish('', sendQueue, Buffer.from(preProcessMessage(message)))
+  async function createBindRPC (queue: string, consumeMessageFn: (message: ConsumeMessage | null, channel: Channel) => Promise<string>): Promise<void> {
+    await channel?.assertQueue(queue + '-rpc', { durable: false }).then(async () => {
+      await channel.prefetch(1)
+      fastify.log.debug('[X] Waiting RPC Server Queue (%s)', queue + '-rpc')
+      await channel.consume(queue + '-rpc', async (msg: amqp.ConsumeMessage | null): Promise<void> => {
+        fastify.log.debug('[X] RPC Server Correlation ID: %s', msg?.properties.correlationId)
+        fastify.log.debug('[X] RPC Server Data Received: %s', JSON.parse(JSON.stringify(msg?.content.toString())))
+        const response = await consumeMessageFn(msg, channel)
+        channel.sendToQueue(msg?.properties.replyTo, Buffer.from(response), {
+          correlationId: msg?.properties.correlationId
+        })
+      }, {
+        noAck: true
+      })
+    })
+  }
+
+  /**
+   * createExchange
+   * @since 0.0.1
+   * @param exchangeName
+   * @param exchangeType
+   * @param consumeMessageFn
+   */
+  async function createExchange (exchangeName: string, exchangeType: string, consumeMessageFn: (message: ConsumeMessage | null, channel: Channel) => void): Promise<void> {
+    await channel?.assertExchange(exchangeName + '-exchange', exchangeType, { durable: true }).then(async () => {
+      await channel.consume(exchangeName + '-exchange', async (msg: amqp.ConsumeMessage | null): Promise<void> => {
+        consumeMessageFn(msg, channel)
+      }, {
+        noAck: true
+      })
+    })
   }
 
   /**
    * directMessage
    * @since 0.0.1
    * @param sendQueue {string} The target queue and directed to that queue. No one else can take it.
+   * @param fromQueue
    * @param message {any} You can publish anything as long as it goes out over as a string.
+   * @param preProcessMessage
    */
-  function directMessage (sendQueue: string, message: any): void {
-    channel?.sendToQueue(sendQueue, Buffer.from(preProcessMessage(message)), {
-      replyTo: queue
+  function directMessage (sendQueue: string, fromQueue: string, message: any, preProcessMessage: (message: any) => string): void {
+    const msg = preProcessMessage(message)
+    channel?.sendToQueue(sendQueue, Buffer.from(msg), {
+      replyTo: fromQueue
+    })
+  }
+
+  /**
+   * publishMessage
+   * @since 0.0.1
+   * @param sendQueue {string} The target queue.
+   * @param message {any} You can publish anything as long as it goes out over as a string.
+   * @param preProcessMessage
+   */
+  function publishMessage (sendQueue: string, message: any, preProcessMessage: (message: any) => string): void {
+    const msg = preProcessMessage(message)
+    fastify.log.debug('[X] Publish to Queue (%s): %s', '', [sendQueue, msg])
+    channel?.publish('', sendQueue, Buffer.from(msg))
+  }
+
+  /**
+   * publishMessageExchange
+   * @since 0.0.1
+   * @param queue
+   * @param routingKey {string} The target queue.
+   * @param message {any} You can publish anything as long as it goes out over as a string.
+   * @param preProcessMessage
+   */
+  function publishMessageExchange (queue: string, routingKey: string, message: any, preProcessMessage: (message: any) => string): void {
+    const msg = preProcessMessage(message)
+    fastify.log.debug('[X] Publish to Queue (%s), Routing Queue (%s): %s', queue, routingKey, msg)
+    channel?.publish(queue + '-exchange', routingKey, Buffer.from(msg))
+  }
+
+  /**
+   * publishRPC
+   * Send an RPC message to an RPC Queue
+   * @since 0.0.1
+   * @param sendQueue {string}
+   * @param message {any}
+   * @param preProcessMessage {function}
+   */
+  async function publishRPC (sendQueue: string, message: any, preProcessMessage: (message: any) => string): Promise<void> {
+    channel?.assertQueue('', { exclusive: true }).then(async (q) => {
+      const correlationId = randomUUID()
+      const msgProcess = preProcessMessage(message)
+      fastify.log.debug('[X] RPC Client Correlation ID: ' + correlationId)
+      fastify.log.debug('[X] RPC Client Message: ' + msgProcess)
+      await channel.consume(q.queue, async (msg: amqp.ConsumeMessage | null): Promise<any> => {
+        if (msg?.properties.correlationId === correlationId) {
+          fastify.log.debug('[X] RPC Client Got Message: ' + msg.content.toString())
+          setTimeout(async () => {
+            await channel.close()
+            process.exit(0)
+          }, 100)
+        }
+      }, {
+        noAck: true
+      })
+      channel?.sendToQueue(sendQueue + '-rpc', Buffer.from(msgProcess), {
+        correlationId,
+        replyTo: q.queue
+      })
     })
   }
 
   /**
    * Decorate Fastify
    */
-  decorateFastifyInstance(fastify, options, { publishMessage, directMessage })
+  decorateFastifyInstance(fastify, options, { createExchange, createBind, createBindRPC, directMessage, publishMessage, publishMessageExchange, publishRPC })
 })
 
 export default fastifyRabbit
