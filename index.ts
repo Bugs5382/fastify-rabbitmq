@@ -41,11 +41,11 @@ declare namespace fastifyRabbitMQ {
     /**
      * directMessage
      * @param sendQueue
-     * @param fromQueue
+     * @param toQueue
      * @param message
      * @param preProcessMessage
      */
-    directMessage: (sendQueue: string, fromQueue: string, message: any, preProcessMessage: (message: any) => string) => void
+    directMessage: (sendQueue: string, toQueue: string, message: any, preProcessMessage: (message: any) => string) => void
     /**
      * publishMessage
      * @param sendQueue
@@ -63,11 +63,11 @@ declare namespace fastifyRabbitMQ {
     publishMessageExchange: (queue: string, routingKey: string, message: any, preProcessMessage: (message: any) => string) => void
     /**
      * publishRPC
-     * @param sendQueue
+     * @param rpcQueue
      * @param message
      * @param preProcessMessage
      */
-    publishRPC: (sendQueue: string, message: any, preProcessMessage: (message: any) => string) => Promise<string>
+    publishRPC: (rpcQueue: string, message: any, preProcessMessage: (message: any) => string) => Promise<string>
   }
 
   export interface FastifyRabbitMQNestedObject {
@@ -199,14 +199,14 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
    * directMessage
    * @since 0.0.1
    * @param sendQueue {string} The target queue and directed to that queue. No one else can take it.
-   * @param fromQueue
+   * @param toQueue {string} Make sure any response that is returned goes to this queue. There must be a string that is returned. It doesn't have to be returned from the same queue that it originally processed on.
    * @param message {any} You can publish anything as long as it goes out over as a string.
-   * @param preProcessMessage
+   * @param preProcessMessage {function} A function that process the message prior to being sent out.
    */
-  function directMessage (sendQueue: string, fromQueue: string, message: any, preProcessMessage: (message: any) => string): void {
+  function directMessage (sendQueue: string, toQueue: string = '', message: any, preProcessMessage: (message: any) => string): void {
     const msg = preProcessMessage(message)
     channel?.sendToQueue(sendQueue, Buffer.from(msg), {
-      replyTo: fromQueue
+      replyTo: toQueue
     })
   }
 
@@ -215,7 +215,7 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
    * @since 0.0.1
    * @param sendQueue {string} The target queue.
    * @param message {any} You can publish anything as long as it goes out over as a string.
-   * @param preProcessMessage
+   * @param preProcessMessage {function} A function that process the message prior to being sent out.
    */
   function publishMessage (sendQueue: string, message: any, preProcessMessage: (message: any) => string): void {
     const msg = preProcessMessage(message)
@@ -229,7 +229,7 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
    * @param queue
    * @param routingKey {string} The target queue.
    * @param message {any} You can publish anything as long as it goes out over as a string.
-   * @param preProcessMessage
+   * @param preProcessMessage {function} A function that process the message prior to being sent out.
    */
   function publishMessageExchange (queue: string, routingKey: string, message: any, preProcessMessage: (message: any) => string): void {
     const msg = preProcessMessage(message)
@@ -241,11 +241,13 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
    * publishRPC
    * Send an RPC message to an RPC Queue
    * @since 0.0.1
-   * @param sendQueue {string}
-   * @param message {any}
-   * @param preProcessMessage {function}
+   * @param rpcQueue {string} The RPC queue.
+   * You do not need to add the "-rpc" to the name.
+   * This is done automatically.
+   * @param message {any} You can publish anything as long as it goes out over as a string.
+   * @param preProcessMessage {function} A function that process the message prior to being sent out.
    */
-  async function publishRPC (sendQueue: string, message: any, preProcessMessage: (message: any) => string): Promise<void> {
+  async function publishRPC (rpcQueue: string, message: any, preProcessMessage: (message: any) => string): Promise<void> {
     channel?.assertQueue('', { exclusive: true }).then(async (q) => {
       const correlationId = randomUUID()
       const msgProcess = preProcessMessage(message)
@@ -262,7 +264,7 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
       }, {
         noAck: true
       })
-      channel?.sendToQueue(sendQueue + '-rpc', Buffer.from(msgProcess), {
+      channel?.sendToQueue(rpcQueue + '-rpc', Buffer.from(msgProcess), {
         correlationId,
         replyTo: q.queue
       })
