@@ -66,8 +66,9 @@ declare namespace fastifyRabbitMQ {
      * @param rpcQueue
      * @param message
      * @param preProcessMessage
+     * @param timeout
      */
-    publishRPC: (rpcQueue: string, message: any, preProcessMessage: (message: any) => string) => Promise<string>
+    publishRPC: (rpcQueue: string, message: any, preProcessMessage: (message: any) => string, timeout?: number) => Promise<string>
   }
 
   export interface FastifyRabbitMQNestedObject {
@@ -246,8 +247,10 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
    * This is done automatically.
    * @param message {any} You can publish anything as long as it goes out over as a string.
    * @param preProcessMessage {function} A function that process the message prior to being sent out.
+   * @param timeout {number} Time in milliseconds to close out the client before not accepting a result.
+   * By default, it is 100ms.
    */
-  async function publishRPC (rpcQueue: string, message: any, preProcessMessage: (message: any) => string): Promise<void> {
+  async function publishRPC (rpcQueue: string, message: any, preProcessMessage: (message: any) => string, timeout: number = 100) {
     channel?.assertQueue('', { exclusive: true }).then(async (q) => {
       const correlationId = randomUUID()
       const msgProcess = preProcessMessage(message)
@@ -259,7 +262,7 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
           setTimeout(async () => {
             await channel.close()
             process.exit(0)
-          }, 100)
+          }, timeout)
         }
       }, {
         noAck: true
