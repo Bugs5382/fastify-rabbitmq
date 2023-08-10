@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/Bugs5382/fastify-rabbitmq#readme",
   "dependencies": {
-    "amqplib": "^0.10.3",
+    "amqp-connection-manager": "^4.1.14",
     "fastify-plugin": "^4.5.1"
   },
   "devDependencies": {
