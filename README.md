@@ -165,3 +165,13 @@ if the file has been changed on the ```node-amqp-connection-manager``` package.)
 #### ```AmqpConnectionManagerOptions```
 
 See [Connection Options](https://github.com/jwalton/node-amqp-connection-manager#connecturls-options) for 'node-amqp-connection-manager' for detailed options that can be passed in.
+
+## Acknowledgements
+
+- [node-amqp-connection-manager](https://github.com/jwalton/node-amqp-connection-manager)
+- [fastify](https://fastify.dev/)
+- ...and of course my Wife and Baby Girl.
+
+## License
+
+Licensed under [MIT](./LICENSE).
