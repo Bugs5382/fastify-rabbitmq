@@ -60,8 +60,25 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
     fastify.log.debug('[fastify-rabbitmq] Namespace: %s', namespace)
   }
 
-  fastify.log.trace('[fastify-rabbitmq] Decorate Fastify')
-  fastify.decorate('rabbitmq', connection )
+  if (namespace) {
+    if (!fastify.rabbitmq) {
+      fastify.decorate('rabbitmq', connection)
+    }
+    if (fastify.rabbitmq[namespace]) {
+      throw Error('[fastify-rabbitmq] Connection name already registered: ' + namespace)
+    }
+    fastify.log.trace('[fastify-rabbitmq] Decorate Fastify with Namespace: %', namespace)
+    fastify.rabbitmq[namespace] = connection
+  } else {
+    if (fastify.rabbitmq) {
+      throw Error('[fastify-rabbitmq] Already registered')
+    }
+  }
+
+  if (!fastify.rabbitmq) {
+    fastify.log.trace('[fastify-rabbitmq] Decorate Fastify')
+    fastify.decorate('rabbitmq', connection )
+  }
 }
 
 const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbitMQOptions): Promise<void> => {
