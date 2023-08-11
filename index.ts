@@ -53,11 +53,15 @@ declare namespace fastifyRabbitMQ {
 const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbitMQOptions, connection: any): void => {
 
   const {
+   logLevel,
    namespace = ''
   } = options
 
+  // override log level
+  const logger = fastify.log.child({}, {level: logLevel})
+
   if (namespace) {
-    fastify.log.debug('[fastify-rabbitmq] Namespace: %s', namespace)
+    logger.debug('[fastify-rabbitmq] Namespace: %s', namespace)
   }
 
   if (namespace) {
@@ -67,7 +71,7 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
     if (fastify.rabbitmq[namespace]) {
       throw Error('[fastify-rabbitmq] Connection name already registered: ' + namespace)
     }
-    fastify.log.trace('[fastify-rabbitmq] Decorate Fastify with Namespace: %', namespace)
+    logger.trace('[fastify-rabbitmq] Decorate Fastify with Namespace: %', namespace)
     fastify.rabbitmq[namespace] = connection
   } else {
     if (fastify.rabbitmq) {
@@ -76,7 +80,7 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
   }
 
   if (!fastify.rabbitmq) {
-    fastify.log.trace('[fastify-rabbitmq] Decorate Fastify')
+    logger.trace('[fastify-rabbitmq] Decorate Fastify')
     fastify.decorate('rabbitmq', connection )
   }
 }
@@ -93,7 +97,7 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
   } = options
 
   // override log level
-  fastify.log.child({}, {level: logLevel})
+  const logger = fastify.log.child({}, {level: logLevel})
 
   const connection = amqp.connect(urLs, {
     heartbeatIntervalInSeconds,
@@ -103,11 +107,11 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
   })
 
   connection.on('connect', function() {
-    fastify.log.debug('[fastify-rabbitmq] Connection to RabbitMQ Successful');
+    logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Successful');
   });
 
   connection.on('disconnect', function() {
-    fastify.log.debug('[fastify-rabbitmq] Connection to RabbitMQ Disconnected');
+    logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Disconnected');
   });
 
   /**
