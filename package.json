@@ -18,6 +18,8 @@
     "url": "git+https://github.com/Bugs5382/fastify-rabbitmq.git"
   },
   "keywords": [
+    "amqp-connection-manager",
+    "amqplib",
     "typescript",
     "rabbitmq",
     "fastify",
