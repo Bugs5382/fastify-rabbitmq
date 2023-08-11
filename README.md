@@ -3,6 +3,15 @@
 A Fastify RabbitMQ Plugin Developed in Pure TypeScript.
 It uses the [node-amqp-connection-manager](https://github.com/jwalton/node-amqp-connection-manager)plugin as a wrapper.
 
+This comes right from the README on ```node-amqp-connection-manager```:
+
+> Features
+> * Automatically reconnect when your amqplib broker dies in a fire.
+> * Round-robin connections between multiple brokers in a cluster.
+> * If messages are sent while the broker is unavailable, queues messages in memory until we reconnect.
+> * Supports both promises and callbacks (using promise-breaker)
+> * Very un-opinionated library—a thin wrapper around amqplib.
+
 ## Notice
 
 This NPM package is still going **active development** so things will break. Review the issues list for on going development work and if you want to help out, submit a PR.
@@ -14,9 +23,10 @@ Help Wanted:
 
 ## Table of Contents
 
-1. [Install](#install)
+1. [Notice](#notice)
+2. [Install](#install)
 2. [Basic Usage](#basic-usage)
-3. [Documentation](#full-documentation)
+3. [Full Documentation](#full-documentation)
    1. [Options](#options)
    2. [Example](#example)
 
@@ -30,20 +40,83 @@ npm i --save-dev @types/amqplib
 Register this as a plugin.
 Make sure it is loaded before any ***routes*** are loaded.
 
-Quick Setup on the Server Side:
+### Quick Setup on the Server Side
 
-```js
+```typescript
+export default fp<any>(async (fastify: FastifyInstance, options: FastifyPluginOptions) => {
+  
+   fastify.register(fastifyRabbit, {
+      urLs: ['amqp://localhost']
+   })
 
-```
-
-Quick Setup on the Client Side:
-
-```js
-
+   fastify.ready().then(async () => {
+      fastify.log.debug('[rabbitmq] Started RabbitMQ')
+      fastify.rabbitmq.channel = fastify.rabbitmq.createChannel({
+         json: true,
+         setup: function (channel: ConfirmChannel) {
+            return Promise.all([
+               channel.assertQueue('server', {durable: true}),
+               channel.prefetch(1),
+               channel.consume('server', async (message) => {
+                  fastify.log.debug(JSON.stringify(data))
+                  fastify.rabbitmq.channel?.ack(message);
+               })
+            ]);
+         },
+      })
+   })
+   
+});
 ```
 
 Within server instance can also call the same queue as long as it has access to the ``fastify.rabbitmq`` decorator.
 Traditionally, a separate app is running and is the client sending messages to the client.
+
+### Quick Setup on the Client Side
+
+First set up your plugin to register the plugin.
+
+```typescript
+import {ConfirmChannel} from "amqplib";
+import {
+   FastifyInstance,
+   FastifyPluginOptions,
+} from 'fastify';
+import fp from "fastify-plugin";
+import fastifyRabbit from "fastify-rabbitmq"
+
+export default fp<any>(async (fastify: FastifyInstance, options: FastifyPluginOptions) => {
+
+  fastify.register(fastifyRabbit, {
+    urLs: ['amqp://localhost']
+  })
+
+  fastify.ready().then(async () => {
+
+    fastify.rabbitmq.channel = fastify.rabbitmq.createChannel({
+      json: true,
+      setup: function (channel: ConfirmChannel) {
+        return channel.assertQueue('client', { durable: true });
+      }
+    });
+
+  })
+
+})
+```
+
+Now in your routes or anywhere the fastify.rabbitmq can be accessed:
+
+```typescript
+fastify.get('/rabbitmq', {}, async (request, reply) => {
+   try {
+      fastify.rabbitmq.channel?.sendToQueue('server', { foo: 'bar'})
+      return reply.code(200).send({ result: true});
+   } catch (error) {
+      return reply.send(404);
+   }
+});
+```
 
 ## Full Documentation
 
@@ -72,7 +145,7 @@ If not provided, your application will fail to load.
 
 This needs to be an array of the RabbitMQ host:
 
-```js
+```typescript
 fastify.register(fastifyRabbit, {
   urLs: ['amqp://localhost']
 })
@@ -92,9 +165,3 @@ if the file has been changed on the ```node-amqp-connection-manager``` package.)
 #### ```AmqpConnectionManagerOptions```
 
 See [Connection Options](https://github.com/jwalton/node-amqp-connection-manager#connecturls-options) for 'node-amqp-connection-manager' for detailed options that can be passed in.
-
-### Example
-
-```typescript
-
-```
