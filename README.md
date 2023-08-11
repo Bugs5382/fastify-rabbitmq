@@ -1,7 +1,7 @@
 # Fastify RabbitMq
 
 A Fastify RabbitMQ Plugin Developed in Pure TypeScript.
-It uses the [node-amqp-connection-manager](https://github.com/jwalton/node-amqp-connection-manager)plugin as a wrapper.
+It uses the [node-amqp-connection-manager](https://github.com/jwalton/node-amqp-connection-manager) plugin as a wrapper.
 
 This comes right from the README on ```node-amqp-connection-manager```:
 
