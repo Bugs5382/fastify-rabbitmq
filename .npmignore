@@ -1,0 +1,6 @@
+# Folders
+.github
+.idea
+
+# Files
+docker-compose.yml

@@ -28,7 +28,8 @@ Help Wanted:
 2. [Basic Usage](#basic-usage)
 3. [Full Documentation](#full-documentation)
    1. [Options](#options)
-   2. [Example](#example)
+4. [Acknowledgements](#acknowledgements)
+5. [License](#license)
 
 ## Install
 ```
