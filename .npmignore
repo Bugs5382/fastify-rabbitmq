@@ -1,6 +1,8 @@
 # Folders
 .github
 .idea
+__tests__
 
 # Files
 docker-compose.yml
+jest.config.ts
