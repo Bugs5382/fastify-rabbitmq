@@ -53,4 +53,29 @@ describe('fastify-rabbitmq', () => {
 
   })
 
+
+  it('unroutable host', async () => {
+    app.register(fastifyRabbit, {
+      urLs: ['amqp://doesnotexist']
+    })
+
+    app.ready().then(async () => {
+      expect(app.rabbitmq.isConnected()).toBe(false)
+      await app.rabbitmq.close()
+    })
+
+  })
+
+  it('nvalid protocol', async () => {
+    app.register(fastifyRabbit, {
+      urLs: ['xamqp://localhost']
+    })
+
+    app.ready().then(async () => {
+      expect(app.rabbitmq.isConnected()).toBe(false)
+      await app.rabbitmq.close()
+    })
+
+  })
+
 });
