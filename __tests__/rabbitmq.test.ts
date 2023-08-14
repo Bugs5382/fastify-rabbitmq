@@ -66,7 +66,7 @@ describe('fastify-rabbitmq', () => {
 
   })
 
-  it('nvalid protocol', async () => {
+  it('invaild protocol', async () => {
     app.register(fastifyRabbit, {
       urLs: ['xamqp://localhost']
     })
