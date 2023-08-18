@@ -1,4 +1,4 @@
-import {Channel, ConfirmChannel} from "amqplib";
+import { Channel, ConfirmChannel } from 'amqplib'
 import amqp, { ChannelWrapper } from 'amqp-connection-manager'
 import type {
   AmqpConnectionManager,
@@ -53,11 +53,11 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
   // override log level
   const logger = fastify.log.child({}, { level: logLevel })
 
-  if (namespace != '') {
+  if (namespace !== '') {
     logger.debug('[fastify-rabbitmq] Namespace: %s', namespace)
   }
 
-  if (namespace != '') {
+  if (namespace !== '') {
     if (typeof fastify.rabbitmq === 'undefined') {
       fastify.decorate('rabbitmq', connection)
     }
@@ -112,5 +112,5 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
   decorateFastifyInstance(fastify, options, connection)
 })
 
-export  { Channel, ConfirmChannel }
+export { Channel, ConfirmChannel }
 export default fastifyRabbit
