@@ -12,9 +12,9 @@ afterEach( () => {
   app.close.bind(app);
 });
 
-describe('fastify-rabbitmq', () => {
+describe('plugin fastify-rabbitmq tests',  () => {
 
-  describe('registration tests', () => {
+  describe('registration tests',  () => {
 
     it("register - error out - no urLs", async () => {
 
