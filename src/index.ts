@@ -7,8 +7,8 @@ import amqp, {
 } from 'amqp-connection-manager'
 import { FastifyInstance } from 'fastify'
 import fp from 'fastify-plugin'
-import {errors} from "./errors";
-import {validateOpts} from "./validation";
+import { errors } from './errors'
+import { validateOpts } from './validation'
 
 import FastifyRabbitMQOptions = fastifyRabbitMQ.FastifyRabbitMQOptions
 import FastifyRabbitMQObject = fastifyRabbitMQ.FastifyRabbitMQObject
@@ -47,7 +47,6 @@ declare namespace fastifyRabbitMQ {
  * @param decorateOptions
  */
 const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbitMQOptions, decorateOptions: any): void => {
-
   const { connection } = decorateOptions
 
   const {
@@ -62,9 +61,8 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
     logger.debug('[fastify-rabbitmq] Namespace: %s', namespace)
   }
 
-  if (typeof namespace !== 'undefined' && namespace !== "") {
-
-    if (typeof fastify.rabbitmq !== "undefined" && typeof fastify.rabbitmq[namespace] !== 'undefined') {
+  if (typeof namespace !== 'undefined' && namespace !== '') {
+    if (typeof fastify.rabbitmq !== 'undefined' && typeof fastify.rabbitmq[namespace] !== 'undefined') {
       throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS(`Already registered with namespace: ${namespace}`)
     }
 
@@ -74,13 +72,10 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
       ...fastify.rabbitmq,
       [namespace]: connection
     })
-
   } else {
-
     if (typeof fastify.rabbitmq !== 'undefined') {
       throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered.')
     }
-
   }
 
   if (typeof fastify.rabbitmq === 'undefined') {
@@ -89,8 +84,7 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
   }
 }
 
-const fastifyRabbit = fp<FastifyRabbitMQOptions>( async (fastify, options) => {
-
+const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) => {
   // validate
   await validateOpts(options)
 
@@ -110,7 +104,7 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>( async (fastify, options) => {
     heartbeatIntervalInSeconds,
     reconnectTimeInSeconds,
     connectionOptions,
-    findServers,
+    findServers
   })
 
   connection.on('connect', function () {
@@ -139,6 +133,8 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>( async (fastify, options) => {
   decorateFastifyInstance(fastify, options, {
     connection
   })
+
+  done()
 })
 
 export { Channel, ConfirmChannel }

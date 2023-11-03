@@ -8,7 +8,7 @@ beforeEach(() => {
   app = fastify();
 });
 
-afterEach(async () => {
+afterEach( () => {
   app.close.bind(app);
 });
 
@@ -183,10 +183,11 @@ describe('fastify-rabbitmq', () => {
     it('invalid protocol', async () => {
       await app.register(fastifyRabbit, {
         urLs: ['xamqp://localhost']
-      }).ready().then(async () => {
-        expect(app.rabbitmq.isConnected()).toBe(false)
-        await app.rabbitmq.close()
       })
+
+      expect(app.rabbitmq.isConnected()).toBe(false)
+
+      await app.rabbitmq.close()
 
     })
 

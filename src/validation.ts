@@ -1,8 +1,8 @@
-import {errors} from "./errors";
+import { errors } from './errors'
 
-export const validateOpts =  async (opts: any) => {
+export const validateOpts = async (opts: any): Promise<void> => {
   // Mandatory
-  if (typeof opts.urLs == 'undefined' && typeof opts.findServers == 'undefined') {
+  if (typeof opts.urLs === 'undefined' && typeof opts.findServers === 'undefined') {
     throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('urLs or findServers must be defined.')
   }
 
