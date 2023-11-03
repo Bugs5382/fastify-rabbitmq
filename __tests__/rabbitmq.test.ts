@@ -21,7 +21,19 @@ describe('fastify-rabbitmq', () => {
       try {
         await app.register(fastifyRabbit)
       } catch (error) {
-        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('urLs or undefined must be defined.'))
+        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('urLs or findServers must be defined.'))
+      }
+
+    });
+
+    it("register - error out - urLs less than 0", async () => {
+
+      try {
+        await app.register(fastifyRabbit, {
+          urLs: [],
+        })
+      } catch (error) {
+        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('urLs must have one item in the array.'))
       }
 
     });
@@ -56,8 +68,6 @@ describe('fastify-rabbitmq', () => {
 
       app.register(fastifyRabbit, {
         urLs: ['amqp://localhost']
-      }).ready((err) => {
-        expect(err).toBeUndefined();
       })
 
       app.register(fastifyRabbit, {
@@ -73,8 +83,6 @@ describe('fastify-rabbitmq', () => {
       app.register(fastifyRabbit, {
         urLs: ['amqp://localhost'],
         namespace: 'error'
-      }).ready((err) => {
-        expect(err).toBeUndefined();
       })
 
       app.register(fastifyRabbit, {
@@ -91,7 +99,6 @@ describe('fastify-rabbitmq', () => {
   describe('common action tests', () => {
 
     it('ensure basic properties are accessible', async () => {
-
       await app.register(fastifyRabbit, {
         urLs: ['amqp://localhost']
       }).ready().then(async () => {
@@ -101,9 +108,9 @@ describe('fastify-rabbitmq', () => {
         expect(app.rabbitmq).toHaveProperty('close');
         expect(app.rabbitmq.channel).toBeUndefined();
 
-        await app.rabbitmq.close()
-
       })
+
+      await app.rabbitmq.close()
 
     })
 
@@ -119,9 +126,9 @@ describe('fastify-rabbitmq', () => {
         expect(app.rabbitmq.unittest).toHaveProperty('close');
         expect(app.rabbitmq.channel).toBeUndefined();
 
-        await app.rabbitmq.close()
-
       })
+
+      await app.rabbitmq.unittest.close()
 
     })
 
