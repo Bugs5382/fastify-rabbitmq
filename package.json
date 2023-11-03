@@ -3,14 +3,17 @@
   "version": "0.0.1-alpha.2",
   "description": "A Fastify RabbitMQ Plugin Developed in Pure TypeScript using the AMQPLIB",
   "type": "module",
-  "types": "dist/index.d.ts",
-  "main": "dist/index.js",
+  "types": "index.d.ts",
+  "main": "index.js",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc -w",
-    "lint": "ts-standard",
-    "lint:fix": "ts-standard --fix",
-    "test": "jest",
+    "lint": "ts-standard --parser @typescript-eslint/parser | snazzy",
+    "lint:fix": "ts-standard --fix --parser @typescript-eslint/parser | snazzy",
+    "test": "jest --forceExit",
+    "test:ci": "jest --ci  --forceExit",
+    "test:coverage": "jest --coverage  --forceExit",
+    "test:dectect": "jest --detectOpenHandles --runInBand  --forceExit",
     "update": "npx npm-check-updates -u && npm install"
   },
   "repository": {
@@ -32,22 +35,25 @@
   },
   "homepage": "https://github.com/Bugs5382/fastify-rabbitmq#readme",
   "dependencies": {
+    "@fastify/error": "^3.4.0",
     "amqp-connection-manager": "^4.1.14",
     "fastify-plugin": "^4.5.1"
   },
   "devDependencies": {
-    "@types/amqplib": "^0.10.1",
-    "@types/jest": "^29.5.3",
-    "@types/node": "^20.4.10",
-    "fastify": "^4.21.0",
-    "jest": "^29.6.2",
-    "npm-check-updates": "^16.11.1",
+    "@types/amqplib": "^0.10.3",
+    "@types/jest": "^29.5.7",
+    "@types/node": "^20.8.10",
+    "@typescript-eslint/parser": "^6.9.1",
+    "fastify": "^4.24.3",
+    "jest": "^29.7.0",
+    "npm-check-updates": "^16.14.6",
     "pre-commit": "^1.2.2",
+    "snazzy": "^9.0.0",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
     "ts-standard": "^12.0.2",
     "tsd": "^0.29.0",
-    "typescript": "^5.1.6"
+    "typescript": "^5.2.2"
   },
   "pre-commit": []
 }
