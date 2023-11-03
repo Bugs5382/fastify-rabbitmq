@@ -120,15 +120,15 @@ describe('fastify-rabbitmq', () => {
         urLs: ['amqp://localhost'],
         namespace: 'unittest'
       }).ready().then(async () => {
-        expect(app.rabbitmq.unittest).toHaveProperty('createChannel');
-        expect(app.rabbitmq.unittest).toHaveProperty('isConnected');
-        expect(app.rabbitmq.unittest).toHaveProperty('reconnect');
-        expect(app.rabbitmq.unittest).toHaveProperty('close');
+        expect(app.rabbitmq["unittest"]).toHaveProperty('createChannel');
+        expect(app.rabbitmq["unittest"]).toHaveProperty('isConnected');
+        expect(app.rabbitmq["unittest"]).toHaveProperty('reconnect');
+        expect(app.rabbitmq["unittest"]).toHaveProperty('close');
         expect(app.rabbitmq.channel).toBeUndefined();
 
       })
 
-      await app.rabbitmq.unittest?.close()
+      await app.rabbitmq["unittest"]?.close()
 
     })
 
