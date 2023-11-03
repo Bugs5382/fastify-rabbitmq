@@ -8,14 +8,16 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
-  await app.close();
+  app.close.bind(app);
 });
 
 describe('fastify-rabbitmq', () => {
 
   it("check to make sure we don't error out", async () => {
 
-    app.register(fastifyRabbit).ready((err) => {
+    app.register(fastifyRabbit, {
+      urLs: ['amqp://localhost']
+    }).ready((err) => {
       expect(err).toBeUndefined();
     })
 

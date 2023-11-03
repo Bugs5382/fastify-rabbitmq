@@ -1,8 +1,8 @@
 import { Channel, ConfirmChannel } from 'amqplib'
-import amqp, { ChannelWrapper } from 'amqp-connection-manager'
-import type {
+import amqp, {
   AmqpConnectionManager,
   AmqpConnectionManagerOptions,
+  ChannelWrapper,
   ConnectionUrl
 } from 'amqp-connection-manager'
 import { FastifyInstance } from 'fastify'
@@ -78,7 +78,7 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
   }
 }
 
-const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbitMQOptions): Promise<void> => {
+const fastifyRabbit = fp<FastifyRabbitMQOptions>( (fastify, options, done) => {
   const {
     logLevel = 'silent',
     urLs,
@@ -110,6 +110,11 @@ const fastifyRabbit = fp(async (fastify: FastifyInstance, options: FastifyRabbit
    * Decorate Fastify
    */
   decorateFastifyInstance(fastify, options, connection)
+
+  /**
+   * Continue
+   */
+  done()
 })
 
 export { Channel, ConfirmChannel }
