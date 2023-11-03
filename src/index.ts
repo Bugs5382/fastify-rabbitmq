@@ -7,6 +7,8 @@ import amqp, {
 } from 'amqp-connection-manager'
 import { FastifyInstance } from 'fastify'
 import fp from 'fastify-plugin'
+import {errors} from "./errors";
+import {validateOpts} from "./validation";
 
 import FastifyRabbitMQOptions = fastifyRabbitMQ.FastifyRabbitMQOptions
 import FastifyRabbitMQObject = fastifyRabbitMQ.FastifyRabbitMQObject
@@ -29,7 +31,7 @@ declare namespace fastifyRabbitMQ {
     [namespace: string]: FastifyRabbitMQObject
   }
 
-  export interface FastifyRabbitMQOptions extends AmqpConnectionManagerOptions {
+  export type FastifyRabbitMQOptions = AmqpConnectionManagerOptions & {
     logLevel?: 'trace' | 'debug' | 'info' | 'warn' | 'error'
     namespace?: string
     urLs: ConnectionUrl | ConnectionUrl[] | undefined | null
@@ -53,7 +55,7 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
   // override log level
   const logger = fastify.log.child({}, { level: logLevel })
 
-  if (namespace !== '') {
+  if (typeof namespace !== 'undefined') {
     logger.debug('[fastify-rabbitmq] Namespace: %s', namespace)
   }
 
@@ -62,13 +64,13 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
       fastify.decorate('rabbitmq', connection)
     }
     if (fastify.rabbitmq[namespace] != null) {
-      throw Error('[fastify-rabbitmq] Connection name already registered: ' + namespace)
+      throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS(`Already registered with namespace: ${namespace}`)
     }
     logger.trace('[fastify-rabbitmq] Decorate Fastify with Namespace: %', namespace)
     fastify.rabbitmq[namespace] = connection
   } else {
     if (typeof fastify.rabbitmq !== 'undefined') {
-      throw Error('[fastify-rabbitmq] Already registered')
+      throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered.')
     }
   }
 
@@ -78,7 +80,11 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
   }
 }
 
-const fastifyRabbit = fp<FastifyRabbitMQOptions>( (fastify, options, done) => {
+const fastifyRabbit = fp<FastifyRabbitMQOptions>( async (fastify, options) => {
+
+  // validate
+  await validateOpts(options)
+
   const {
     logLevel = 'silent',
     urLs,
@@ -94,27 +100,38 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>( (fastify, options, done) => {
   const connection = amqp.connect(urLs, {
     heartbeatIntervalInSeconds,
     reconnectTimeInSeconds,
+    connectionOptions,
     findServers,
-    connectionOptions
   })
 
   connection.on('connect', function () {
     logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Successful')
   })
 
+  connection.on('connectFailed', function () {
+    logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Connection Failed')
+  })
+
+  connection.on('close', function () {
+    logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Closed')
+  })
+
   connection.on('disconnect', function () {
     logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Disconnected')
+  })
+
+  connection.on('blocked', function () {
+    logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Blocked')
+  })
+
+  connection.on('unblocked', function () {
+    logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Un-Blocked')
   })
 
   /**
    * Decorate Fastify
    */
   decorateFastifyInstance(fastify, options, connection)
-
-  /**
-   * Continue
-   */
-  done()
 })
 
 export { Channel, ConfirmChannel }
