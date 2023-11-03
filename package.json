@@ -11,6 +11,7 @@
     "lint": "ts-standard | snazzy",
     "lint:fix": "ts-standard --fix --parser @typescript-eslint/parser | snazzy",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "update": "npx npm-check-updates -u && npm install"
   },
   "repository": {

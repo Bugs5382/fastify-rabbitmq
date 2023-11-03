@@ -128,7 +128,7 @@ describe('fastify-rabbitmq', () => {
 
       })
 
-      await app.rabbitmq.unittest.close()
+      await app.rabbitmq.unittest?.close()
 
     })
 

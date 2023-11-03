@@ -62,7 +62,7 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
     logger.debug('[fastify-rabbitmq] Namespace: %s', namespace)
   }
 
-  if (typeof namespace !== 'undefined' && namespace != "") {
+  if (typeof namespace !== 'undefined' && namespace !== "") {
 
     if (typeof fastify.rabbitmq !== "undefined" && typeof fastify.rabbitmq[namespace] !== 'undefined') {
       throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS(`Already registered with namespace: ${namespace}`)
