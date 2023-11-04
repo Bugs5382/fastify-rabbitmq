@@ -40,7 +40,6 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
       ...fastify.rabbitmq,
       [namespace]: connection
     })
-
   } else {
     if (typeof fastify.rabbitmq !== 'undefined') {
       throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered.')
@@ -87,7 +86,7 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
   /**
    * Decorate Fastify
    */
-  decorateFastifyInstance(fastify, options, {connection})
+  decorateFastifyInstance(fastify, options, { connection })
 
   done()
 })

@@ -1,5 +1,4 @@
-import { ChannelWrapper, ConnectionUrl } from 'amqp-connection-manager'
-import { IAmqpConnectionManager } from 'amqp-connection-manager/dist/types/AmqpConnectionManager'
+import { AmqpConnectionManager, ConnectionUrl } from 'amqp-connection-manager'
 import { FastifyPluginAsync, FastifyPluginOptions } from 'fastify'
 
 declare module 'fastify' {
@@ -8,7 +7,7 @@ declare module 'fastify' {
     /**
      * RabbitMQ Connection
      */
-    rabbitmq: IAmqpConnectionManager & fastifyRabbitMQ.FastifyRabbitMQAmqpNestedObject
+    rabbitmq: AmqpConnectionManager & fastifyRabbitMQ.FastifyRabbitMQAmqpNestedObject
   }
 
 }
@@ -17,23 +16,11 @@ type FastifyRabbitMQ = FastifyPluginAsync<fastifyRabbitMQ.FastifyRabbitMQOptions
 
 declare namespace fastifyRabbitMQ {
 
-  export interface FastifyRabbitMQChannelProperties {
-    /* Name of the Channel */
-    name: string
-    /* RabbitMQ Options for Channel */
-    options: any
-  }
-
-  export interface FastifyRabbitMQChannels extends FastifyRabbitMQChannelProperties {
-    /* The channel wrapper from amqp-connection-manager */
-    channel: ChannelWrapper
-  }
-
   export interface FastifyRabbitMQAmqpNestedObject {
     /**
      * Nested Namespace
      */
-    [namespace: string]: IAmqpConnectionManager
+    [namespace: string]: AmqpConnectionManager
   }
 
   export interface FastifyRabbitMQOptions extends FastifyPluginOptions {
