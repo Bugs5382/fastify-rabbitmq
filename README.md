@@ -36,7 +36,7 @@ Make sure it is loaded before any ***routes*** are loaded.
 ### Quick Setup on the Server Side
 
 ```typescript
-export default fp<FastifyPluginOptions>((fastify, options, done) => {
+export default fp<FastifyRabbitMQOptions>((fastify, options, done) => {
   
    fastify.register(fastifyRabbit, {
       urLs: ['amqp://localhost']
@@ -53,7 +53,7 @@ export default fp<FastifyPluginOptions>((fastify, options, done) => {
    const LISTEN_QUEUE_NAME = 'bar'
 
    // create the channel 'bar'
-   app.rabbitmq.createChannel({
+   fastify.rabbitmq.createChannel({
       name: LISTEN_QUEUE_NAME,
       setup: function(channel: Channel) {
          return Promise.all([
@@ -91,14 +91,11 @@ This could be on the same service as the server or another service all together.
 
 ```typescript
 import {ConfirmChannel} from "amqplib";
-import {
-   FastifyInstance,
-   FastifyPluginOptions,
-} from 'fastify';
+import {FastifyInstance} from 'fastify';
 import fp from "fastify-plugin";
-import fastifyRabbit from "fastify-rabbitmq"
+import fastifyRabbit, {FastifyRabbitMQOptions} from "fastify-rabbitmq"
 
-export default fp<FastifyPluginOptions>((fastify, options, done) => {
+export default fp<FastifyRabbitMQOptions>((fastify, options, done) => {
 
   fastify.register(fastifyRabbit, {
     urLs: ['amqp://localhost']
@@ -107,7 +104,7 @@ export default fp<FastifyPluginOptions>((fastify, options, done) => {
    const LISTEN_QUEUE_NAME = 'bar'
 
    // create the channel 'bar'
-   const channelWrapper = app.rabbitmq.createChannel({
+   const channelWrapper = fastify.rabbitmq.createChannel({
       name: LISTEN_QUEUE_NAME,
       setup: function(channel: Channel) {
          return Promise.all([
