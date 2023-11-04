@@ -1,34 +1,28 @@
 {
-  "files": [
-    "src/index.ts"
-  ],
+  "compileOnSave": true,
   "compilerOptions": {
+    "outDir": "./dist",
+    "allowJs": true,
     "target": "es2015",
     "module": "es2015",
     "moduleResolution": "node",
     "declaration": true,
-    "outDir": "./dist",
-    "noEmit": false,
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": false,
+    "noImplicitAny": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "strictNullChecks": true,
+    "types": ["jest", "node"]
   },
+  "include": [
+    "./**/*"
+  ],
   "exclude": [
     "node_modules",
+    "jest.config.ts",
+    "./__tests__/**/*",
+    "./coverage/**/*",
+    "./types/**/*",
+    "./dist/**/*"
   ]
 }

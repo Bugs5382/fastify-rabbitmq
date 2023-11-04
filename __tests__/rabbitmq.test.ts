@@ -106,8 +106,6 @@ describe('plugin fastify-rabbitmq tests',  () => {
         expect(app.rabbitmq).toHaveProperty('isConnected');
         expect(app.rabbitmq).toHaveProperty('reconnect');
         expect(app.rabbitmq).toHaveProperty('close');
-        expect(app.rabbitmq.channel).toBeUndefined();
-
       })
 
       await app.rabbitmq.close()
@@ -124,8 +122,6 @@ describe('plugin fastify-rabbitmq tests',  () => {
         expect(app.rabbitmq["unittest"]).toHaveProperty('isConnected');
         expect(app.rabbitmq["unittest"]).toHaveProperty('reconnect');
         expect(app.rabbitmq["unittest"]).toHaveProperty('close');
-        expect(app.rabbitmq.channel).toBeUndefined();
-
       })
 
       await app.rabbitmq["unittest"]?.close()

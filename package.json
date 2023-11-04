@@ -37,10 +37,10 @@
   "dependencies": {
     "@fastify/error": "^3.4.0",
     "amqp-connection-manager": "^4.1.14",
+    "@types/amqplib": "^0.10.3",
     "fastify-plugin": "^4.5.1"
   },
   "devDependencies": {
-    "@types/amqplib": "^0.10.3",
     "@types/jest": "^29.5.7",
     "@types/node": "^20.8.10",
     "@typescript-eslint/parser": "^6.9.1",

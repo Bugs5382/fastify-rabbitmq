@@ -9,7 +9,7 @@ import FastifyRabbitMQOptions = fastifyRabbitMQ.FastifyRabbitMQOptions
 
 /**
  * decorateFastifyInstance
- * @since 0.0.1
+ * @since 1.0.0
  * @param fastify
  * @param options
  * @param decorateOptions
@@ -40,6 +40,7 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
       ...fastify.rabbitmq,
       [namespace]: connection
     })
+
   } else {
     if (typeof fastify.rabbitmq !== 'undefined') {
       throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered.')
@@ -83,24 +84,10 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
     logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Connection Failed')
   })
 
-  connection.on('disconnect', function () {
-    logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Disconnected')
-  })
-
-  connection.on('blocked', function () {
-    logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Blocked')
-  })
-
-  connection.on('unblocked', function () {
-    logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Un-Blocked')
-  })
-
   /**
    * Decorate Fastify
    */
-  decorateFastifyInstance(fastify, options, {
-    connection
-  })
+  decorateFastifyInstance(fastify, options, {connection})
 
   done()
 })

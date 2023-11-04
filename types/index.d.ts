@@ -1,17 +1,14 @@
-import { AmqpConnectionManager, ChannelWrapper, ConnectionUrl } from 'amqp-connection-manager'
+import { ChannelWrapper, ConnectionUrl } from 'amqp-connection-manager'
+import { IAmqpConnectionManager } from 'amqp-connection-manager/dist/types/AmqpConnectionManager'
 import { FastifyPluginAsync, FastifyPluginOptions } from 'fastify'
-
-export interface FastifyRabbitMQCreateSender {
-  /* Name of the Channel */
-  name: string
-  /* RabbitMQ Options for Sending */
-  options: any
-}
 
 declare module 'fastify' {
 
   interface FastifyInstance {
-    rabbitmq: fastifyRabbitMQ.FastifyRabbitMQObject & fastifyRabbitMQ.FastifyRabbitMQNestedObject
+    /**
+     * RabbitMQ Connection
+     */
+    rabbitmq: IAmqpConnectionManager & fastifyRabbitMQ.FastifyRabbitMQAmqpNestedObject
   }
 
 }
@@ -20,22 +17,23 @@ type FastifyRabbitMQ = FastifyPluginAsync<fastifyRabbitMQ.FastifyRabbitMQOptions
 
 declare namespace fastifyRabbitMQ {
 
-  export interface FastifyRabbitMQObject extends AmqpConnectionManager {
-    /**
-     * Create a sender channel
-     */
-    createSender: (opts: FastifyRabbitMQCreateSender) => void
-    /**
-     * Get wrapper channel
-     */
-    getSendChannel: (name: string) => ChannelWrapper
+  export interface FastifyRabbitMQChannelProperties {
+    /* Name of the Channel */
+    name: string
+    /* RabbitMQ Options for Channel */
+    options: any
   }
 
-  export interface FastifyRabbitMQNestedObject {
+  export interface FastifyRabbitMQChannels extends FastifyRabbitMQChannelProperties {
+    /* The channel wrapper from amqp-connection-manager */
+    channel: ChannelWrapper
+  }
+
+  export interface FastifyRabbitMQAmqpNestedObject {
     /**
      * Nested Namespace
      */
-    [namespace: string]: FastifyRabbitMQObject
+    [namespace: string]: IAmqpConnectionManager
   }
 
   export interface FastifyRabbitMQOptions extends FastifyPluginOptions {
