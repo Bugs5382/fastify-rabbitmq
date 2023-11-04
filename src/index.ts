@@ -2,9 +2,48 @@ import { Channel, ConfirmChannel } from 'amqplib'
 import amqp from 'amqp-connection-manager'
 import { FastifyInstance } from 'fastify'
 import fp from 'fastify-plugin'
-import { fastifyRabbitMQ } from '../types'
 import { errors } from './errors'
 import { validateOpts } from './validation'
+import { AmqpConnectionManager, ConnectionUrl } from 'amqp-connection-manager'
+import { FastifyPluginOptions } from 'fastify'
+
+declare module 'fastify' {
+
+  interface FastifyInstance {
+    /**
+     * RabbitMQ Connection
+     */
+    rabbitmq: AmqpConnectionManager & fastifyRabbitMQ.FastifyRabbitMQAmqpNestedObject
+  }
+
+}
+
+declare namespace fastifyRabbitMQ {
+
+  export interface FastifyRabbitMQAmqpNestedObject {
+    /**
+     * Nested Namespace
+     */
+    [namespace: string]: AmqpConnectionManager
+  }
+
+  export interface FastifyRabbitMQOptions extends FastifyPluginOptions {
+    /**
+     * Log Level for RabbitMQ Debugging
+     */
+    logLevel?: 'trace' | 'debug' | 'info' | 'warn' | 'error'
+    /**
+     * Namespace
+     */
+    namespace?: string
+    /**
+     * Connection URLS for AmqpConnectionManager
+     */
+    urLs: ConnectionUrl | ConnectionUrl[] | undefined | null
+  }
+
+}
+
 import FastifyRabbitMQOptions = fastifyRabbitMQ.FastifyRabbitMQOptions
 
 /**
