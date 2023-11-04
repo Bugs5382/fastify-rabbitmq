@@ -1,12 +1,24 @@
 {
   "name": "fastify-rabbitmq",
   "version": "0.0.1-alpha.2",
-  "description": "A Fastify RabbitMQ Plugin Developed in Pure TypeScript using the AMQPLIB",
-  "type": "module",
-  "types": "types/index.d.ts",
-  "main": "index.js",
+  "description": "A Fastify RabbitMQ Plugin Developed in Pure TypeScript using the AMQPLIB.",
+  "module": "./dist/esm/index.js",
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/cjs/index.js"
+    }
+  },
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
-    "build": "tsc",
+    "clean": "rm -rf dist coverage",
+    "build": "tsc && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json && ./bin/build-types.sh",
     "build:watch": "tsc -w",
     "lint": "ts-standard --parser @typescript-eslint/parser | snazzy",
     "lint:fix": "ts-standard --fix --parser @typescript-eslint/parser | snazzy",
