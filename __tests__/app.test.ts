@@ -1,6 +1,6 @@
 import {ConsumeMessage} from "amqplib";
 import fastify, {FastifyInstance} from "fastify";
-import {Channel} from "../../node-amqp-connection-manager";
+import {Channel} from "../src";
 import fastifyRabbit from "../src";
 
 describe('fastify-rabbitmq sample app tests',  () => {
