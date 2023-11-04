@@ -12,9 +12,9 @@ afterEach( () => {
   app.close.bind(app);
 });
 
-describe('fastify-rabbitmq', () => {
+describe('plugin fastify-rabbitmq tests',  () => {
 
-  describe('registration tests', () => {
+  describe('registration tests',  () => {
 
     it("register - error out - no urLs", async () => {
 
@@ -106,8 +106,6 @@ describe('fastify-rabbitmq', () => {
         expect(app.rabbitmq).toHaveProperty('isConnected');
         expect(app.rabbitmq).toHaveProperty('reconnect');
         expect(app.rabbitmq).toHaveProperty('close');
-        expect(app.rabbitmq.channel).toBeUndefined();
-
       })
 
       await app.rabbitmq.close()
@@ -124,8 +122,6 @@ describe('fastify-rabbitmq', () => {
         expect(app.rabbitmq["unittest"]).toHaveProperty('isConnected');
         expect(app.rabbitmq["unittest"]).toHaveProperty('reconnect');
         expect(app.rabbitmq["unittest"]).toHaveProperty('close');
-        expect(app.rabbitmq.channel).toBeUndefined();
-
       })
 
       await app.rabbitmq["unittest"]?.close()

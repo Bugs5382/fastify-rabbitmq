@@ -3,6 +3,7 @@
 .idea
 src
 __tests__
+coverage
 
 # Files
 jest.config.ts
