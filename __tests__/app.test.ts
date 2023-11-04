@@ -3,9 +3,9 @@ import fastify, {FastifyInstance} from "fastify";
 import {Channel} from "../src";
 import fastifyRabbit from "../src";
 
-describe('fastify-rabbitmq sample app tests',  () => {
+describe('fastify-rabbitmq sample app tests', () => {
 
-  describe("create a receiver and a sender",  () => {
+  describe("create a receiver and a sender", () => {
 
     let app: FastifyInstance;
 
@@ -16,7 +16,7 @@ describe('fastify-rabbitmq sample app tests',  () => {
         urLs: ['amqp://localhost']
       })
 
-      await app.listen({ port: 3000});
+      await app.listen({port: 3000});
 
       await app.ready()
 
@@ -29,11 +29,18 @@ describe('fastify-rabbitmq sample app tests',  () => {
       });
     })
 
-    it("create/get sender (foo) and receiver/listener (bar)",  async () => {
+    it("create/get sender (foo) and receiver/listener (bar)", async () => {
 
       const DATE = Date.now()
 
       const LISTEN_QUEUE_NAME = 'bar'
+
+      const onMessage = function(data: ConsumeMessage | null) {
+        if (data == null) return;
+        const message = JSON.parse(data.content.toString()) as string;
+        channelWrapper.ack(data);
+        expect(message).toBe(DATE.toString())
+      }
 
       // create the channel 'bar'
       const channelWrapper = app.rabbitmq.createChannel({
@@ -46,12 +53,6 @@ describe('fastify-rabbitmq sample app tests',  () => {
           ]);
         }
       });
-
-      const onMessage = function(data: ConsumeMessage) {
-        const message = JSON.parse(data.content.toString());
-        channelWrapper.ack(data);
-        expect(message).toBe(DATE)
-      }
 
       const SEND_QUEUE_NAME = 'foo';
 
