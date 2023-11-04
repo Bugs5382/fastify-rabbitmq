@@ -1,47 +1,15 @@
 import { Channel, ConfirmChannel } from 'amqplib'
-import amqp, {
-  AmqpConnectionManager,
-  AmqpConnectionManagerOptions,
-  ChannelWrapper,
-  ConnectionUrl
-} from 'amqp-connection-manager'
+import amqp from 'amqp-connection-manager'
 import { FastifyInstance } from 'fastify'
 import fp from 'fastify-plugin'
+import { fastifyRabbitMQ } from '../types'
 import { errors } from './errors'
 import { validateOpts } from './validation'
-
 import FastifyRabbitMQOptions = fastifyRabbitMQ.FastifyRabbitMQOptions
-import FastifyRabbitMQObject = fastifyRabbitMQ.FastifyRabbitMQObject
-
-declare module 'fastify' {
-
-  interface FastifyInstance {
-    rabbitmq: FastifyRabbitMQObject & fastifyRabbitMQ.FastifyRabbitMQNestedObject
-  }
-
-}
-
-declare namespace fastifyRabbitMQ {
-
-  export interface FastifyRabbitMQObject extends AmqpConnectionManager {
-    channel?: ChannelWrapper
-  }
-
-  export interface FastifyRabbitMQNestedObject {
-    [namespace: string]: FastifyRabbitMQObject
-  }
-
-  export type FastifyRabbitMQOptions = AmqpConnectionManagerOptions & {
-    logLevel?: 'trace' | 'debug' | 'info' | 'warn' | 'error'
-    namespace?: string
-    urLs: ConnectionUrl | ConnectionUrl[] | undefined | null
-  }
-
-}
 
 /**
  * decorateFastifyInstance
- * @since 0.0.1
+ * @since 1.0.0
  * @param fastify
  * @param options
  * @param decorateOptions
@@ -115,24 +83,10 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
     logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Connection Failed')
   })
 
-  connection.on('disconnect', function () {
-    logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Disconnected')
-  })
-
-  connection.on('blocked', function () {
-    logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Blocked')
-  })
-
-  connection.on('unblocked', function () {
-    logger.debug('[fastify-rabbitmq] Connection to RabbitMQ Un-Blocked')
-  })
-
   /**
    * Decorate Fastify
    */
-  decorateFastifyInstance(fastify, options, {
-    connection
-  })
+  decorateFastifyInstance(fastify, options, { connection })
 
   done()
 })
