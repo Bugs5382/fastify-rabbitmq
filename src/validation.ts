@@ -13,11 +13,11 @@ export const validateOpts = async (opts: any): Promise<void> => {
 
   // Optional
   if (typeof opts.heartbeatIntervalInSeconds !== 'undefined' && opts.heartbeatIntervalInSeconds < 0) {
-    throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('heartbeatIntervalInSeconds must be a valid number greater than 0.')
+    throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('heartbeatIntervalInSeconds must be a valid number greater than or equal to 0.')
   }
 
   // Optional
   if (typeof opts.reconnectTimeInSeconds !== 'undefined' && opts.reconnectTimeInSeconds < 0) {
-    throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('reconnectTimeInSeconds must be a valid number greater than 0.')
+    throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('reconnectTimeInSeconds must be a valid number greater than or equal to 0.')
   }
 }
