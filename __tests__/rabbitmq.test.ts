@@ -46,7 +46,7 @@ describe('plugin fastify-rabbitmq tests',  () => {
           heartbeatIntervalInSeconds: -1
         })
       } catch (error) {
-        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('heartbeatIntervalInSeconds must be a valid number greater than 0.'))
+        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('heartbeatIntervalInSeconds must be a valid number greater than or equal to 0.'))
       }
 
     });
@@ -59,7 +59,7 @@ describe('plugin fastify-rabbitmq tests',  () => {
           reconnectTimeInSeconds: -1
         })
       } catch (error) {
-        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('reconnectTimeInSeconds must be a valid number greater than 0.'))
+        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('reconnectTimeInSeconds must be a valid number greater than or equal to 0.'))
       }
 
     });
