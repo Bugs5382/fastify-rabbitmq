@@ -1,4 +1,4 @@
-import { Channel, ConfirmChannel } from 'amqplib'
+import { Channel, ConfirmChannel, ConsumeMessage } from 'amqplib'
 import amqp from 'amqp-connection-manager'
 import { FastifyInstance } from 'fastify'
 import fp from 'fastify-plugin'
@@ -130,5 +130,5 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
   done()
 })
 
-export { Channel, ConfirmChannel }
+export { Channel, ConfirmChannel, ConsumeMessage }
 export default fastifyRabbit
