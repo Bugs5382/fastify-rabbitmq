@@ -116,7 +116,6 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
 
     } else {
 
-      // spin up this connection but as the experimental
       connection = amqp.connect(urLs, {
         heartbeatIntervalInSeconds,
         reconnectTimeInSeconds,
@@ -132,7 +131,7 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
      */
       connection.createRPCServer = async (queueName: string): Promise<ChannelWrapper> => {
 
-        if (typeof queueName !== 'undefined') {
+        if (typeof queueName == 'undefined') {
           throw new errors.FASTIFY_RABBIT_MQ_ERR_USAGE('queueName is missing.')
         }
 
@@ -170,7 +169,6 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
         let rpcClientQueueName = '';
 
         const rpcClient = fastify.rabbitmq.createChannel({
-          name: 'rpcClient',
           setup: async (channel: ConfirmChannel) => {
             const qok = await channel.assertQueue('', { exclusive: true });
             rpcClientQueueName = qok.queue;

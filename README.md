@@ -69,7 +69,6 @@ export default fp<FastifyRabbitMQOptions>((fastify, options, done) => {
    const onMessage = function(data: ConsumeMessage) {
       const message = JSON.parse(data.content.toString());
       channelWrapper.ack(data);
-      expect(message).toBe(DATE)
    }
    
 });
