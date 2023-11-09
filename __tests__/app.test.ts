@@ -87,7 +87,7 @@ describe('fastify-rabbitmq sample app tests', () => {
 
   })
 
-  describe("basic RPC tests", () => {
+  describe("basic RPC/direct-reply-to tests", () => {
 
     let app: FastifyInstance;
 
@@ -224,7 +224,7 @@ describe('fastify-rabbitmq sample app tests', () => {
 
   })
 
-  describe("basic RPC tests, namespace", () => {
+  describe("basic RPC/direct-reply-to tests, namespace", () => {
 
     let app: FastifyInstance;
 
@@ -359,6 +359,18 @@ describe('fastify-rabbitmq sample app tests', () => {
       await rpcServer.close();
 
     })
+
+  })
+
+  describe('complex RPC/direct-reply-to tests', () => {
+
+    test.todo('rpc')
+
+  })
+
+  describe('complex RPC/direct-reply-to tests, namespace', () => {
+
+    test.todo('rpc')
 
   })
 

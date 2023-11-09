@@ -38,6 +38,20 @@ describe('plugin fastify-rabbitmq tests', () => {
 
     });
 
+    test("register - error out - enableRPC must be a boolean", async () => {
+
+      try {
+        // @ts-ignore this is here so we can do the unit testing
+        app.register(fastifyRabbit, {
+          urLs: ['amqp://localhost'],
+          enableRPC: 'test'
+        })
+      } catch (error) {
+        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS(''))
+      }
+
+    });
+
     test("register - error out - heartbeatIntervalInSeconds not a number greater than 0", async () => {
 
       try {
@@ -83,7 +97,6 @@ describe('plugin fastify-rabbitmq tests', () => {
         err = error
       }
 
-      await app.rabbitmq.close();
       expect(err).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered.'))
 
     });
@@ -103,7 +116,7 @@ describe('plugin fastify-rabbitmq tests', () => {
       } catch (error) {
         err = error
       }
-      await app.rabbitmq.error.close();
+
       expect(err).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered with namespace: error'))
 
     })

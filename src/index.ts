@@ -3,6 +3,7 @@ import { Channel, ConfirmChannel, ConsumeMessage } from 'amqplib'
 import { FastifyInstance } from 'fastify'
 import fp from 'fastify-plugin'
 import { AmqpConnectionManager, AmqpConnectionManagerOptions, ConnectionUrl } from '../../node-amqp-connection-manager'
+import {FastifyRabbitMQAmqpConnectionManager} from "./decorate";
 import { errors } from './errors'
 import { validateOpts } from './validation'
 import FastifyRabbitMQOptions = fastifyRabbitMQ.FastifyRabbitMQOptions
@@ -28,6 +29,12 @@ declare namespace fastifyRabbitMQ {
   }
 
   export interface FastifyRabbitMQOptions extends AmqpConnectionManagerOptions {
+    /**
+     * Enable RPC Built In System
+     *
+     * Warning: Experiential
+     */
+    enableRPC?: boolean
     /**
      * Namespace
      */
@@ -90,16 +97,42 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
     heartbeatIntervalInSeconds,
     reconnectTimeInSeconds,
     findServers,
-    connectionOptions
+    connectionOptions,
+    enableRPC = false
   } = options
 
   // we need this 'writeable'
-  const connection = amqp.connect(urLs, {
-    heartbeatIntervalInSeconds,
-    reconnectTimeInSeconds,
-    findServers,
-    connectionOptions
-  })
+  let connection
+
+  if (typeof enableRPC !== 'undefined' && !enableRPC) {
+
+      // spin up this connection but not as experimental
+      connection = amqp.connect(urLs, {
+        heartbeatIntervalInSeconds,
+        reconnectTimeInSeconds,
+        findServers,
+        connectionOptions
+      })
+
+    } else {
+
+      // spin up this connection but as the experimental
+      connection = amqp.connect(urLs, {
+        heartbeatIntervalInSeconds,
+        reconnectTimeInSeconds,
+        findServers,
+        connectionOptions
+      }) as FastifyRabbitMQAmqpConnectionManager
+
+      connection.createRPCServer = async () => {
+
+      }
+
+      connection.createRPCClient = async () => {
+
+      }
+
+    }
 
   connection.on('connect', function () {
     fastify.log.debug('[fastify-rabbitmq] Connection to RabbitMQ Successful')
