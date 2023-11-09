@@ -27,7 +27,7 @@ declare namespace fastifyRabbitMQ {
     /**
      * Nested Namespace
      */
-    [namespace: string]: AmqpConnectionManager & FastifyRabbitMQAmqpConnectionManager
+    [namespace: string]: AmqpConnectionManager
   }
 
   export interface FastifyRabbitMQOptions extends AmqpConnectionManagerOptions {
@@ -57,7 +57,7 @@ declare namespace fastifyRabbitMQ {
  * @param decorateOptions
  */
 const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbitMQOptions, decorateOptions: any): void => {
-  const { connection } = decorateOptions
+  const {connection} = decorateOptions
 
   const {
     namespace = ''
@@ -107,21 +107,21 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
 
   if (typeof enableRPC !== 'undefined' && !enableRPC) {
 
-      connection = amqp.connect(urLs, {
-        heartbeatIntervalInSeconds,
-        reconnectTimeInSeconds,
-        findServers,
-        connectionOptions
-      })
+    connection = amqp.connect(urLs, {
+      heartbeatIntervalInSeconds,
+      reconnectTimeInSeconds,
+      findServers,
+      connectionOptions
+    })
 
-    } else {
+  } else {
 
-      connection = amqp.connect(urLs, {
-        heartbeatIntervalInSeconds,
-        reconnectTimeInSeconds,
-        findServers,
-        connectionOptions
-      }) as FastifyRabbitMQAmqpConnectionManager
+    connection = amqp.connect(urLs, {
+      heartbeatIntervalInSeconds,
+      reconnectTimeInSeconds,
+      findServers,
+      connectionOptions
+    }) as FastifyRabbitMQAmqpConnectionManager
 
     /**
      * Create RPC Server Function
@@ -129,73 +129,73 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
      * @param queueName {string} The name of the server queue.
      * This is the name the client must send to work.
      */
-      connection.createRPCServer = async (queueName: string): Promise<ChannelWrapper> => {
+    connection.createRPCServer = async (queueName: string): Promise<ChannelWrapper> => {
 
-        if (typeof queueName == 'undefined') {
-          throw new errors.FASTIFY_RABBIT_MQ_ERR_USAGE('queueName is missing.')
-        }
-
-        return fastify.rabbitmq.createChannel({
-          name: queueName,
-          setup: async (channel: ConfirmChannel) => {
-            await channel.assertQueue(queueName, {durable: false, autoDelete: true});
-            await channel.prefetch(1);
-            await channel.consume(
-              queueName,
-              (message) => {
-                if (message) {
-                  channel.sendToQueue(message.properties.replyTo, Buffer.from('world'), {
-                    correlationId: message.properties.correlationId,
-                  });
-                }
-              },
-              {noAck: true}
-            );
-          },
-        })
-
+      if (typeof queueName == 'undefined') {
+        throw new errors.FASTIFY_RABBIT_MQ_ERR_USAGE('queueName is missing.')
       }
+
+      return fastify.rabbitmq.createChannel({
+        name: queueName,
+        setup: async (channel: ConfirmChannel) => {
+          await channel.assertQueue(queueName, {durable: false, autoDelete: true});
+          await channel.prefetch(1);
+          await channel.consume(
+            queueName,
+            (message) => {
+              if (message) {
+                channel.sendToQueue(message.properties.replyTo, Buffer.from('world'), {
+                  correlationId: message.properties.correlationId,
+                });
+              }
+            },
+            {noAck: true}
+          );
+        },
+      })
+
+    }
 
     /**
      *
      * @since 1.0.0
      * @param queueName
      */
-      connection.createRPCClient = async (queueName: string): Promise<any> => {
+    connection.createRPCClient = async (queueName: string): Promise<any> => {
 
-        const correlationId = randomUUID()
-        const messageId = randomUUID()
-        const result = defer<any>();
-        let rpcClientQueueName = '';
+      const correlationId = randomUUID()
+      const messageId = randomUUID()
+      const result = defer<any>();
+      let rpcClientQueueName = '';
 
-        const rpcClient = fastify.rabbitmq.createChannel({
-          setup: async (channel: ConfirmChannel) => {
-            const qok = await channel.assertQueue('', { exclusive: true });
-            rpcClientQueueName = qok.queue;
+      const rpcClient = fastify.rabbitmq.createChannel({
+        setup: async (channel: ConfirmChannel) => {
+          const qok = await channel.assertQueue('', {exclusive: true});
+          rpcClientQueueName = qok.queue;
 
-            await channel.consume(
-              rpcClientQueueName,
-              (message) => {
-                result.resolve(message?.content.toString());
-              },
-              { noAck: true }
-            );
-          },
-        });
+          await channel.consume(
+            rpcClientQueueName,
+            (message) => {
+              result.resolve(message?.content.toString());
+            },
+            {noAck: true}
+          );
+        },
+      });
 
-        await rpcClient.waitForConnect()
+      await rpcClient.waitForConnect()
 
-        await rpcClient.sendToQueue(queueName, 'hello', {
-          correlationId: correlationId,
-          replyTo: rpcClientQueueName,
-          messageId: messageId,
-        });
+      await rpcClient.sendToQueue(queueName, 'hello', {
+        correlationId: correlationId,
+        replyTo: rpcClientQueueName,
+        messageId: messageId,
+      });
 
-        return await result.promise
-
-      }
+      return await result.promise
 
     }
+
+  }
 
   connection.on('connect', function () {
     fastify.log.debug('[fastify-rabbitmq] Connection to RabbitMQ Successful')
@@ -208,10 +208,10 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
   /**
    * Decorate Fastify
    */
-  decorateFastifyInstance(fastify, options, { connection })
+  decorateFastifyInstance(fastify, options, {connection})
 
   done()
 })
 
-export { Channel, ConfirmChannel, ConsumeMessage }
+export {Channel, ConfirmChannel, ConsumeMessage}
 export default fastifyRabbit

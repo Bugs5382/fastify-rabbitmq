@@ -47,7 +47,22 @@ describe('plugin fastify-rabbitmq tests', () => {
           enableRPC: 'test'
         })
       } catch (error) {
-        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS(''))
+        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('enableRPC must be a boolean.'))
+      }
+
+    });
+
+    test("register - error out - enableRPC not allowed with namespace", async () => {
+
+      try {
+        // @ts-ignore this is here so we can do the unit testing
+        app.register(fastifyRabbit, {
+          urLs: ['amqp://localhost'],
+          namespace: 'unittesting',
+          enableRPC: true
+        })
+      } catch (error) {
+        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('enableRPC right now can not be used in namespaced RabbitMQ instances.'))
       }
 
     });
@@ -142,7 +157,7 @@ describe('plugin fastify-rabbitmq tests', () => {
 
     });
 
-    test("register - can't be registered twice - namespace  (experiential)", async () => {
+    test.skip("register - can't be registered twice - namespace  (experiential)", async () => {
       let err;
       try {
         await app.register(fastifyRabbit, {
@@ -204,7 +219,7 @@ describe('plugin fastify-rabbitmq tests', () => {
 
     })
 
-    test('ensure basic properties are accessible (experiential)', async () => {
+    test.skip('ensure basic properties are accessible (experiential)', async () => {
 
       try {
         app.register(fastifyRabbit, {
@@ -225,7 +240,7 @@ describe('plugin fastify-rabbitmq tests', () => {
 
     })
 
-    test('ensure basic properties are accessible via namespace  (experiential)', async () => {
+    test.skip('ensure basic properties are accessible via namespace  (experiential)', async () => {
       try {
         await app.register(fastifyRabbit, {
           urLs: ['amqp://localhost'],

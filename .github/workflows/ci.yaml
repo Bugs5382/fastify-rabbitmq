@@ -1,7 +1,7 @@
 name: GitHub CI
 on:
   push:
-    branches: [master]
+    branches: [ master ]
     tags:
       - '*'
   pull_request:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.x, 'lts/*']
+        node-version: [ 20.x, 'lts/*' ]
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}

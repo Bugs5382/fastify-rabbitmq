@@ -413,10 +413,4 @@ describe('fastify-rabbitmq sample app tests', () => {
 
   })
 
-  describe('complex RPC/direct-reply-to tests, namespace', () => {
-
-    test.todo('RPC')
-
-  })
-
 })

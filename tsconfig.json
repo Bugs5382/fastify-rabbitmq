@@ -2,7 +2,9 @@
   "compilerOptions": {
     "target": "es2018",
     "module": "es6",
-    "lib": ["es2018"],
+    "lib": [
+      "es2018"
+    ],
     "allowJs": false,
     "declaration": true,
     "sourceMap": true,
@@ -25,6 +27,8 @@
     ],
     "esModuleInterop": true
   },
-  "include": ["./src/**/*"],
+  "include": [
+    "./src/**/*"
+  ],
   "compileOnSave": true
 }
