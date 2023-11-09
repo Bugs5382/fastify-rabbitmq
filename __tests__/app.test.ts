@@ -3,6 +3,7 @@ import fastify, {FastifyInstance} from "fastify";
 import {defer} from 'promise-tools';
 import {Channel} from "../src";
 import fastifyRabbit from "../src";
+import {errors} from "../src/errors";
 
 describe('fastify-rabbitmq sample app tests', () => {
 
@@ -112,7 +113,7 @@ describe('fastify-rabbitmq sample app tests', () => {
 
     })
 
-    test('rpc', async () => {
+    test('RPC', async () => {
 
       const queueName = 'testQueueRpc';
       let rpcClientQueueName = '';
@@ -250,7 +251,7 @@ describe('fastify-rabbitmq sample app tests', () => {
 
     })
 
-    test('rpc', async () => {
+    test('RPC', async () => {
 
       const queueName = 'testQueueRpc';
       let rpcClientQueueName = '';
@@ -388,13 +389,25 @@ describe('fastify-rabbitmq sample app tests', () => {
 
     })
 
-    test('rpc', async () => {
+    test('RPC, no queueName passed to createRPCServer', async () => {
+
+      try {
+        // @ts-ignore need this for unit testing
+        await app.rabbitmq.createRPCServer()
+      } catch (error) {
+        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_USAGE('queueName is missing.'))
+      }
+    })
+
+    test('RPC', async () => {
 
       const serverInstance = await app.rabbitmq.createRPCServer("unit-testing")
-      console.log(serverInstance)
 
-      const clientInstance = await app.rabbitmq.createRPCClient()
-      console.log(clientInstance)
+      await serverInstance.waitForConnect()
+
+      const clientResult = await app.rabbitmq.createRPCClient<string>("unit-testing")
+
+      expect(clientResult).toBe('world')
 
     })
 
@@ -402,7 +415,7 @@ describe('fastify-rabbitmq sample app tests', () => {
 
   describe('complex RPC/direct-reply-to tests, namespace', () => {
 
-    test.todo('rpc')
+    test.todo('RPC')
 
   })
 

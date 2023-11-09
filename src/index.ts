@@ -1,7 +1,9 @@
 import amqp, {ChannelWrapper} from 'amqp-connection-manager'
 import {Channel, ConfirmChannel, ConsumeMessage} from 'amqplib'
+import {randomUUID} from "crypto";
 import {FastifyInstance} from 'fastify'
 import fp from 'fastify-plugin'
+import {defer} from "promise-tools";
 import {AmqpConnectionManager, AmqpConnectionManagerOptions, ConnectionUrl} from '../../node-amqp-connection-manager'
 import {FastifyRabbitMQAmqpConnectionManager} from "./decorate";
 import {errors} from './errors'
@@ -122,7 +124,17 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
         connectionOptions
       }) as FastifyRabbitMQAmqpConnectionManager
 
+    /**
+     * Create RPC Server Function
+     * @since 1.0.0
+     * @param queueName {string} The name of the server queue.
+     * This is the name the client must send to work.
+     */
       connection.createRPCServer = async (queueName: string): Promise<ChannelWrapper> => {
+
+        if (typeof queueName !== 'undefined') {
+          throw new errors.FASTIFY_RABBIT_MQ_ERR_USAGE('queueName is missing.')
+        }
 
         return fastify.rabbitmq.createChannel({
           name: queueName,
@@ -145,7 +157,43 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
 
       }
 
-      connection.createRPCClient = async () => {
+    /**
+     *
+     * @since 1.0.0
+     * @param queueName
+     */
+      connection.createRPCClient = async (queueName: string): Promise<any> => {
+
+        const correlationId = randomUUID()
+        const messageId = randomUUID()
+        const result = defer<any>();
+        let rpcClientQueueName = '';
+
+        const rpcClient = fastify.rabbitmq.createChannel({
+          name: 'rpcClient',
+          setup: async (channel: ConfirmChannel) => {
+            const qok = await channel.assertQueue('', { exclusive: true });
+            rpcClientQueueName = qok.queue;
+
+            await channel.consume(
+              rpcClientQueueName,
+              (message) => {
+                result.resolve(message?.content.toString());
+              },
+              { noAck: true }
+            );
+          },
+        });
+
+        await rpcClient.waitForConnect()
+
+        await rpcClient.sendToQueue(queueName, 'hello', {
+          correlationId: correlationId,
+          replyTo: rpcClientQueueName,
+          messageId: messageId,
+        });
+
+        return await result.promise
 
       }
 
