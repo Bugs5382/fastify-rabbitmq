@@ -121,6 +121,49 @@ describe('plugin fastify-rabbitmq tests', () => {
 
     })
 
+    test("register - can't be registered twice  (experiential)", async () => {
+
+      let err;
+      try {
+        await app.register(fastifyRabbit, {
+          urLs: ['amqp://localhost'],
+          enableRPC: true
+        })
+
+        await app.register(fastifyRabbit, {
+          urLs: ['amqp://localhost'],
+          enableRPC: true
+        })
+      } catch (error) {
+        err = error
+      }
+
+      expect(err).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered.'))
+
+    });
+
+    test("register - can't be registered twice - namespace  (experiential)", async () => {
+      let err;
+      try {
+        await app.register(fastifyRabbit, {
+          urLs: ['amqp://localhost'],
+          namespace: 'error',
+          enableRPC: true
+        })
+
+        await app.register(fastifyRabbit, {
+          urLs: ['amqp://localhost'],
+          namespace: 'error',
+          enableRPC: true
+        })
+      } catch (error) {
+        err = error
+      }
+
+      expect(err).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered with namespace: error'))
+
+    })
+
   })
 
   describe('common action tests', () => {
@@ -131,17 +174,10 @@ describe('plugin fastify-rabbitmq tests', () => {
         app.register(fastifyRabbit, {
           urLs: ['amqp://localhost']
         })
-
-        //app.ready();
-
-
         expect(app.rabbitmq).toHaveProperty('createChannel');
         expect(app.rabbitmq).toHaveProperty('isConnected');
         expect(app.rabbitmq).toHaveProperty('reconnect');
         expect(app.rabbitmq).toHaveProperty('close');
-
-
-        //await app.rabbitmq.close()
       } catch (e) {
         /* should not error */
       }
@@ -154,6 +190,50 @@ describe('plugin fastify-rabbitmq tests', () => {
           urLs: ['amqp://localhost'],
           namespace: 'unittest'
         }).ready().then(async () => {
+          expect(app.rabbitmq.unittest).toHaveProperty('createChannel');
+          expect(app.rabbitmq.unittest).toHaveProperty('isConnected');
+          expect(app.rabbitmq.unittest).toHaveProperty('reconnect');
+          expect(app.rabbitmq.unittest).toHaveProperty('close');
+        })
+
+        await app.rabbitmq.unittest.close()
+
+      } catch (e) {
+        /* should not error */
+      }
+
+    })
+
+    test('ensure basic properties are accessible (experiential)', async () => {
+
+      try {
+        app.register(fastifyRabbit, {
+          urLs: ['amqp://localhost'],
+          enableRPC: true
+        })
+        expect(app.rabbitmq).toHaveProperty('createRPCServer');
+        expect(app.rabbitmq).toHaveProperty('createRPCClient');
+        expect(app.rabbitmq).toHaveProperty('createChannel');
+        expect(app.rabbitmq).toHaveProperty('isConnected');
+        expect(app.rabbitmq).toHaveProperty('reconnect');
+        expect(app.rabbitmq).toHaveProperty('close');
+
+        await app.rabbitmq.close()
+      } catch (e) {
+        /* should not error */
+      }
+
+    })
+
+    test('ensure basic properties are accessible via namespace  (experiential)', async () => {
+      try {
+        await app.register(fastifyRabbit, {
+          urLs: ['amqp://localhost'],
+          namespace: 'unittest',
+          enableRPC: true
+        }).ready().then(async () => {
+          expect(app.rabbitmq.unittest).toHaveProperty('createRPCServer');
+          expect(app.rabbitmq.unittest).toHaveProperty('createRPCClient');
           expect(app.rabbitmq.unittest).toHaveProperty('createChannel');
           expect(app.rabbitmq.unittest).toHaveProperty('isConnected');
           expect(app.rabbitmq.unittest).toHaveProperty('reconnect');

@@ -14,7 +14,7 @@ declare module 'fastify' {
     /**
      * RabbitMQ Connection
      */
-    rabbitmq: AmqpConnectionManager & fastifyRabbitMQ.FastifyRabbitMQAmqpNestedObject
+    rabbitmq: AmqpConnectionManager & FastifyRabbitMQAmqpConnectionManager & fastifyRabbitMQ.FastifyRabbitMQAmqpNestedObject
   }
 
 }
@@ -25,7 +25,7 @@ declare namespace fastifyRabbitMQ {
     /**
      * Nested Namespace
      */
-    [namespace: string]: AmqpConnectionManager
+    [namespace: string]: AmqpConnectionManager & FastifyRabbitMQAmqpConnectionManager
   }
 
   export interface FastifyRabbitMQOptions extends AmqpConnectionManagerOptions {
@@ -64,7 +64,6 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
   if (typeof namespace !== 'undefined') {
     fastify.log.debug('[fastify-rabbitmq] Namespace: %s', namespace)
   }
-
   if (typeof namespace !== 'undefined' && namespace !== '') {
     if (typeof fastify.rabbitmq === 'undefined') {
       fastify.decorate('rabbitmq', Object.create(null))
@@ -106,7 +105,6 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
 
   if (typeof enableRPC !== 'undefined' && !enableRPC) {
 
-      // spin up this connection but not as experimental
       connection = amqp.connect(urLs, {
         heartbeatIntervalInSeconds,
         reconnectTimeInSeconds,

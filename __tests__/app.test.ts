@@ -364,7 +364,39 @@ describe('fastify-rabbitmq sample app tests', () => {
 
   describe('complex RPC/direct-reply-to tests', () => {
 
-    test.todo('rpc')
+    let app: FastifyInstance;
+
+    beforeAll(async () => {
+      app = fastify()
+
+      app.register(fastifyRabbit, {
+        urLs: ['amqp://localhost'],
+        enableRPC: true
+      })
+
+      await app.listen();
+
+      await app.ready();
+
+      app.rabbitmq.on('connect', function (result) {
+        app.log.debug(result)
+      });
+
+      app.rabbitmq.on('disconnect', function (err) {
+        app.log.debug(err);
+      });
+
+    })
+
+    test('rpc', async () => {
+
+      const serverInstance = await app.rabbitmq.createRPCServer()
+      console.log(serverInstance)
+
+      const clientInstance = await app.rabbitmq.createRPCClient()
+      console.log(clientInstance)
+
+    })
 
   })
 
