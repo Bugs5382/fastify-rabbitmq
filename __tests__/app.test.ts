@@ -390,7 +390,7 @@ describe('fastify-rabbitmq sample app tests', () => {
 
     test('rpc', async () => {
 
-      const serverInstance = await app.rabbitmq.createRPCServer()
+      const serverInstance = await app.rabbitmq.createRPCServer("unit-testing")
       console.log(serverInstance)
 
       const clientInstance = await app.rabbitmq.createRPCClient()

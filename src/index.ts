@@ -1,12 +1,12 @@
-import amqp from 'amqp-connection-manager'
-import { Channel, ConfirmChannel, ConsumeMessage } from 'amqplib'
-import { FastifyInstance } from 'fastify'
+import amqp, {ChannelWrapper} from 'amqp-connection-manager'
+import {Channel, ConfirmChannel, ConsumeMessage} from 'amqplib'
+import {FastifyInstance} from 'fastify'
 import fp from 'fastify-plugin'
-import { AmqpConnectionManager, AmqpConnectionManagerOptions, ConnectionUrl } from '../../node-amqp-connection-manager'
+import {AmqpConnectionManager, AmqpConnectionManagerOptions, ConnectionUrl} from '../../node-amqp-connection-manager'
 import {FastifyRabbitMQAmqpConnectionManager} from "./decorate";
-import { errors } from './errors'
-import { validateOpts } from './validation'
-import FastifyRabbitMQOptions = fastifyRabbitMQ.FastifyRabbitMQOptions
+import {errors} from './errors'
+import {validateOpts} from './validation'
+import FastifyRabbitMQOptions = fastifyRabbitMQ.FastifyRabbitMQOptions;
 
 declare module 'fastify' {
 
@@ -122,7 +122,26 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
         connectionOptions
       }) as FastifyRabbitMQAmqpConnectionManager
 
-      connection.createRPCServer = async () => {
+      connection.createRPCServer = async (queueName: string): Promise<ChannelWrapper> => {
+
+        return fastify.rabbitmq.createChannel({
+          name: queueName,
+          setup: async (channel: ConfirmChannel) => {
+            await channel.assertQueue(queueName, {durable: false, autoDelete: true});
+            await channel.prefetch(1);
+            await channel.consume(
+              queueName,
+              (message) => {
+                if (message) {
+                  channel.sendToQueue(message.properties.replyTo, Buffer.from('world'), {
+                    correlationId: message.properties.correlationId,
+                  });
+                }
+              },
+              {noAck: true}
+            );
+          },
+        })
 
       }
 
