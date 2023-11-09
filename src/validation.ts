@@ -1,4 +1,4 @@
-import {errors} from './errors'
+import { errors } from './errors'
 
 export const validateOpts = async (opts: any): Promise<void> => {
   // Mandatory
@@ -25,7 +25,7 @@ export const validateOpts = async (opts: any): Promise<void> => {
   if (typeof opts.enableRPC !== 'undefined' && typeof opts.enableRPC !== 'boolean') {
     throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('enableRPC must be a boolean.')
   } else {
-    if (typeof opts.namespace !== 'undefined' && opts.enableRPC) {
+    if (typeof opts.namespace !== 'undefined' && opts.enableRPC === true) {
       throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('enableRPC right now can not be used in namespaced RabbitMQ instances.')
     }
   }

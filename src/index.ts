@@ -1,14 +1,14 @@
-import amqp, {ChannelWrapper} from 'amqp-connection-manager'
-import {Channel, ConfirmChannel, ConsumeMessage} from 'amqplib'
-import {randomUUID} from "crypto";
-import {FastifyInstance} from 'fastify'
+import amqp, { ChannelWrapper } from 'amqp-connection-manager'
+import { Channel, ConfirmChannel, ConsumeMessage } from 'amqplib'
+import { randomUUID } from 'crypto'
+import { FastifyInstance } from 'fastify'
 import fp from 'fastify-plugin'
-import {defer} from "promise-tools";
-import {AmqpConnectionManager, AmqpConnectionManagerOptions, ConnectionUrl} from '../../node-amqp-connection-manager'
-import {FastifyRabbitMQAmqpConnectionManager} from "./decorate";
-import {errors} from './errors'
-import {validateOpts} from './validation'
-import FastifyRabbitMQOptions = fastifyRabbitMQ.FastifyRabbitMQOptions;
+import { defer } from 'promise-tools'
+import { AmqpConnectionManager, AmqpConnectionManagerOptions, ConnectionUrl } from '../../node-amqp-connection-manager'
+import { FastifyRabbitMQAmqpConnectionManager } from './decorate'
+import { errors } from './errors'
+import { validateOpts } from './validation'
+import FastifyRabbitMQOptions = fastifyRabbitMQ.FastifyRabbitMQOptions
 
 declare module 'fastify' {
 
@@ -57,7 +57,7 @@ declare namespace fastifyRabbitMQ {
  * @param decorateOptions
  */
 const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbitMQOptions, decorateOptions: any): void => {
-  const {connection} = decorateOptions
+  const { connection } = decorateOptions
 
   const {
     namespace = ''
@@ -106,16 +106,13 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
   let connection
 
   if (typeof enableRPC !== 'undefined' && !enableRPC) {
-
     connection = amqp.connect(urLs, {
       heartbeatIntervalInSeconds,
       reconnectTimeInSeconds,
       findServers,
       connectionOptions
     })
-
   } else {
-
     connection = amqp.connect(urLs, {
       heartbeatIntervalInSeconds,
       reconnectTimeInSeconds,
@@ -130,30 +127,28 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
      * This is the name the client must send to work.
      */
     connection.createRPCServer = async (queueName: string): Promise<ChannelWrapper> => {
-
-      if (typeof queueName == 'undefined') {
+      if (typeof queueName === 'undefined') {
         throw new errors.FASTIFY_RABBIT_MQ_ERR_USAGE('queueName is missing.')
       }
 
       return fastify.rabbitmq.createChannel({
         name: queueName,
         setup: async (channel: ConfirmChannel) => {
-          await channel.assertQueue(queueName, {durable: false, autoDelete: true});
-          await channel.prefetch(1);
+          await channel.assertQueue(queueName, { durable: false, autoDelete: true })
+          await channel.prefetch(1)
           await channel.consume(
             queueName,
             (message) => {
-              if (message) {
+              if (message != null) {
                 channel.sendToQueue(message.properties.replyTo, Buffer.from('world'), {
-                  correlationId: message.properties.correlationId,
-                });
+                  correlationId: message.properties.correlationId
+                })
               }
             },
-            {noAck: true}
-          );
-        },
+            { noAck: true }
+          )
+        }
       })
-
     }
 
     /**
@@ -162,39 +157,36 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
      * @param queueName
      */
     connection.createRPCClient = async (queueName: string): Promise<any> => {
-
       const correlationId = randomUUID()
       const messageId = randomUUID()
-      const result = defer<any>();
-      let rpcClientQueueName = '';
+      const result = defer<any>()
+      let rpcClientQueueName = ''
 
       const rpcClient = fastify.rabbitmq.createChannel({
         setup: async (channel: ConfirmChannel) => {
-          const qok = await channel.assertQueue('', {exclusive: true});
-          rpcClientQueueName = qok.queue;
+          const qok = await channel.assertQueue('', { exclusive: true })
+          rpcClientQueueName = qok.queue
 
           await channel.consume(
             rpcClientQueueName,
             (message) => {
-              result.resolve(message?.content.toString());
+              result.resolve(message?.content.toString())
             },
-            {noAck: true}
-          );
-        },
-      });
+            { noAck: true }
+          )
+        }
+      })
 
       await rpcClient.waitForConnect()
 
       await rpcClient.sendToQueue(queueName, 'hello', {
-        correlationId: correlationId,
+        correlationId,
         replyTo: rpcClientQueueName,
-        messageId: messageId,
-      });
+        messageId
+      })
 
       return await result.promise
-
     }
-
   }
 
   connection.on('connect', function () {
@@ -208,10 +200,10 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
   /**
    * Decorate Fastify
    */
-  decorateFastifyInstance(fastify, options, {connection})
+  decorateFastifyInstance(fastify, options, { connection })
 
   done()
 })
 
-export {Channel, ConfirmChannel, ConsumeMessage}
+export { Channel, ConfirmChannel, ConsumeMessage }
 export default fastifyRabbit

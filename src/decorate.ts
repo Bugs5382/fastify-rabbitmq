@@ -1,4 +1,4 @@
-import {AmqpConnectionManager, ChannelWrapper} from "amqp-connection-manager";
+import { AmqpConnectionManager, ChannelWrapper } from 'amqp-connection-manager'
 
 export interface FastifyRabbitMQAmqpConnectionManager extends AmqpConnectionManager {
   /**
