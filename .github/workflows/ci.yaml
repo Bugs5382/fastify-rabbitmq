@@ -24,3 +24,21 @@ jobs:
         run: docker-compose up -d
       - name: Run Unit Tests
         run: npm test
+  release:
+    # Only release on push to main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # Waits for test jobs for each Node.js version to complete
+    needs: [ test ]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'lts/*'
+      - run: npm install
+      - name: semantic-release
+        run: npm run semantic-release
+        env:
+          GH_TOKEN: ${{ secrets.DEPLOY_GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
