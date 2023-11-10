@@ -27,7 +27,7 @@
     "test:ci": "jest --ci  --forceExit",
     "test:coverage": "jest --coverage --detectOpenHandles  --forceExit",
     "test:dectect": "jest --detectOpenHandles --runInBand  --forceExit",
-    "update": "npx npm-check-updates -u && npm install"
+    "update": "npx npm-check-updates -u && npm install && npm run test"
   },
   "repository": {
     "type": "git",

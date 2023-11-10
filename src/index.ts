@@ -4,50 +4,11 @@ import { randomUUID } from 'crypto'
 import { FastifyInstance } from 'fastify'
 import fp from 'fastify-plugin'
 import { defer } from 'promise-tools'
-import { AmqpConnectionManager, AmqpConnectionManagerOptions, ConnectionUrl } from '../../node-amqp-connection-manager'
 import { FastifyRabbitMQAmqpConnectionManager } from './decorate'
 import { errors } from './errors'
+import { fastifyRabbitMQ } from './types'
 import { validateOpts } from './validation'
 import FastifyRabbitMQOptions = fastifyRabbitMQ.FastifyRabbitMQOptions
-
-declare module 'fastify' {
-
-  export interface FastifyInstance {
-    /**
-     * RabbitMQ Connection
-     */
-    rabbitmq: AmqpConnectionManager & FastifyRabbitMQAmqpConnectionManager & fastifyRabbitMQ.FastifyRabbitMQAmqpNestedObject
-  }
-
-}
-
-declare namespace fastifyRabbitMQ {
-
-  export interface FastifyRabbitMQAmqpNestedObject {
-    /**
-     * Nested Namespace
-     */
-    [namespace: string]: AmqpConnectionManager
-  }
-
-  export interface FastifyRabbitMQOptions extends AmqpConnectionManagerOptions {
-    /**
-     * Enable RPC Built In System
-     *
-     * Warning: Experiential
-     */
-    enableRPC?: boolean
-    /**
-     * Namespace
-     */
-    namespace?: string
-    /**
-     * Connection URLS for AmqpConnectionManager
-     */
-    urLs: ConnectionUrl | ConnectionUrl[] | undefined | null
-  }
-
-}
 
 /**
  * decorateFastifyInstance
