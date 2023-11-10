@@ -24,9 +24,8 @@
     "lint:fix": "ts-standard --fix --parser @typescript-eslint/parser | snazzy",
     "prepublishOnly": "npm run build",
     "test": "jest --detectOpenHandles --forceExit",
-    "test:ci": "jest --ci  --forceExit",
+    "test:ci": "jest --ci  --detectOpenHandles --forceExit",
     "test:coverage": "jest --coverage --detectOpenHandles  --forceExit",
-    "test:dectect": "jest --detectOpenHandles --runInBand  --forceExit",
     "update": "npx npm-check-updates -u && npm install && npm run test"
   },
   "repository": {

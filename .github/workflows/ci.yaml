@@ -23,7 +23,7 @@ jobs:
       - name: Run RabbitMQ
         run: docker-compose up -d
       - name: Run Unit Tests
-        run: npm test
+        run: npm test:ci
   release:
     # Only release on push to main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

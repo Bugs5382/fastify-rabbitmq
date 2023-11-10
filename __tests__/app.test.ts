@@ -76,7 +76,7 @@ describe('fastify-rabbitmq sample app tests', () => {
     let app: FastifyInstance
 
     beforeAll(async () => {
-      app = fastify()
+      app = fastify({ logger: false})
 
       await app.register(fastifyRabbit, {
         urLs: ['amqp://localhost']
@@ -199,7 +199,7 @@ describe('fastify-rabbitmq sample app tests', () => {
     let app: FastifyInstance
 
     beforeAll(async () => {
-      app = fastify()
+      app = fastify({ logger: false})
 
       await app.register(fastifyRabbit, {
         urLs: ['amqp://localhost'],
@@ -323,7 +323,7 @@ describe('fastify-rabbitmq sample app tests', () => {
     let app: FastifyInstance
 
     beforeAll(async () => {
-      app = fastify()
+      app = fastify({ logger: false})
 
       await app.register(fastifyRabbit, {
         urLs: ['amqp://localhost'],
@@ -347,7 +347,7 @@ describe('fastify-rabbitmq sample app tests', () => {
 
     test('RPC, onMessage is not a function', async () => {
       try {
-        // @ts-expect-error need this for unit testing
+        // @ts-expect-error
         await app.rabbitmq.createRPCServer("queue", "not-a-function")
       } catch (error) {
         expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_USAGE('onMessage must be a function.'))
