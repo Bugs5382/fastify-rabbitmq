@@ -15,14 +15,6 @@ describe('fastify-rabbitmq sample app tests', () => {
         urLs: ['amqp://localhost']
       })
 
-      app.rabbitmq.on('connect', function (result) {
-        app.log.debug(result)
-      })
-
-      app.rabbitmq.on('disconnect', function (err) {
-        app.log.debug(err)
-      })
-
       await app.listen()
 
       await app.ready()
@@ -94,13 +86,6 @@ describe('fastify-rabbitmq sample app tests', () => {
 
       await app.ready()
 
-      app.rabbitmq.on('connect', function (result) {
-        app.log.debug(result)
-      })
-
-      app.rabbitmq.on('disconnect', function (err) {
-        app.log.debug(err)
-      })
     })
 
     test('RPC', async () => {
@@ -225,13 +210,6 @@ describe('fastify-rabbitmq sample app tests', () => {
 
       await app.ready()
 
-      app.rabbitmq.helloworld.on('connect', function (result) {
-        app.log.debug(result)
-      })
-
-      app.rabbitmq.helloworld.on('disconnect', function (err) {
-        app.log.debug(err)
-      })
     })
 
     test('RPC', async () => {
@@ -356,13 +334,6 @@ describe('fastify-rabbitmq sample app tests', () => {
 
       await app.ready()
 
-      app.rabbitmq.on('connect', function (result) {
-        app.log.debug(result)
-      })
-
-      app.rabbitmq.on('disconnect', function (err) {
-        app.log.debug(err)
-      })
     })
 
     test('RPC, no queueName passed to createRPCServer', async () => {
