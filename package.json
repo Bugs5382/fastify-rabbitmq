@@ -23,7 +23,7 @@
     "lint": "ts-standard --parser @typescript-eslint/parser | snazzy",
     "lint:fix": "ts-standard --fix --parser @typescript-eslint/parser | snazzy",
     "prepublishOnly": "npm run build",
-    "test": "tsc -p __tests__ && jest --detectOpenHandles --forceExit",
+    "test": "jest --detectOpenHandles --forceExit",
     "test:ci": "jest --ci  --forceExit",
     "test:coverage": "jest --coverage --detectOpenHandles  --forceExit",
     "test:dectect": "jest --detectOpenHandles --runInBand  --forceExit",
