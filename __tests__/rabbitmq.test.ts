@@ -1,62 +1,52 @@
-import fastify, {FastifyInstance} from "fastify";
-import fastifyRabbit from "../src";
-import {errors} from "../src/errors";
+import fastify, { FastifyInstance } from 'fastify'
+import fastifyRabbit from '../src'
+import { errors } from '../src/errors'
 
-let app: FastifyInstance;
+let app: FastifyInstance
 
 beforeEach(() => {
-  app = fastify({logger: false});
-});
+  app = fastify({ logger: false })
+})
 
 afterEach(async () => {
   await app.close()
-});
+})
 
 describe('plugin fastify-rabbitmq tests', () => {
-
   describe('registration tests', () => {
-
-    test("register - error out - no urLs", async () => {
-
+    test('register - error out - no urLs', async () => {
       try {
-        app.register(fastifyRabbit)
+        await app.register(fastifyRabbit)
       } catch (error) {
         expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('urLs or findServers must be defined.'))
       }
+    })
 
-    });
-
-    test("register - error out - urLs less than 0", async () => {
-
+    test('register - error out - urLs less than 0', async () => {
       try {
-        app.register(fastifyRabbit, {
-          urLs: [],
+        await app.register(fastifyRabbit, {
+          urLs: []
         })
       } catch (error) {
         expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('urLs must have one item in the array.'))
       }
+    })
 
-    });
-
-    test("register - error out - enableRPC must be a boolean", async () => {
-
+    test('register - error out - enableRPC must be a boolean', async () => {
       try {
-        // @ts-ignore this is here so we can do the unit testing
-        app.register(fastifyRabbit, {
+        // @ts-expect-error this is here so we can do the unit testing
+        await app.register(fastifyRabbit, {
           urLs: ['amqp://localhost'],
           enableRPC: 'test'
         })
       } catch (error) {
         expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('enableRPC must be a boolean.'))
       }
+    })
 
-    });
-
-    test("register - error out - enableRPC not allowed with namespace", async () => {
-
+    test('register - error out - enableRPC not allowed with namespace', async () => {
       try {
-        // @ts-ignore this is here so we can do the unit testing
-        app.register(fastifyRabbit, {
+        await app.register(fastifyRabbit, {
           urLs: ['amqp://localhost'],
           namespace: 'unittesting',
           enableRPC: true
@@ -64,42 +54,34 @@ describe('plugin fastify-rabbitmq tests', () => {
       } catch (error) {
         expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('enableRPC right now can not be used in namespaced RabbitMQ instances.'))
       }
+    })
 
-    });
-
-    test("register - error out - heartbeatIntervalInSeconds not a number greater than 0", async () => {
-
+    test('register - error out - heartbeatIntervalInSeconds not a number greater than 0', async () => {
       try {
-        app.register(fastifyRabbit, {
+        await app.register(fastifyRabbit, {
           urLs: ['amqp://localhost'],
           heartbeatIntervalInSeconds: -1
         })
       } catch (error) {
         expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('heartbeatIntervalInSeconds must be a valid number greater than or equal to 0.'))
       }
+    })
 
-    });
-
-    test("register - error out - reconnectTimeInSeconds not a number greater than 0", async () => {
-
+    test('register - error out - reconnectTimeInSeconds not a number greater than 0', async () => {
       try {
-        app.register(fastifyRabbit, {
+        await app.register(fastifyRabbit, {
           urLs: ['amqp://localhost'],
           reconnectTimeInSeconds: -1
         })
       } catch (error) {
         expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('reconnectTimeInSeconds must be a valid number greater than or equal to 0.'))
       }
-
-    });
-
+    })
   })
 
   describe('sanity checks', () => {
-
     test("register - can't be registered twice", async () => {
-
-      let err;
+      let err
       try {
         await app.register(fastifyRabbit, {
           urLs: ['amqp://localhost']
@@ -113,11 +95,10 @@ describe('plugin fastify-rabbitmq tests', () => {
       }
 
       expect(err).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered.'))
-
-    });
+    })
 
     test("register - can't be registered twice - namespace", async () => {
-      let err;
+      let err
       try {
         await app.register(fastifyRabbit, {
           urLs: ['amqp://localhost'],
@@ -133,12 +114,10 @@ describe('plugin fastify-rabbitmq tests', () => {
       }
 
       expect(err).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered with namespace: error'))
-
     })
 
     test("register - can't be registered twice  (experiential)", async () => {
-
-      let err;
+      let err
       try {
         await app.register(fastifyRabbit, {
           urLs: ['amqp://localhost'],
@@ -154,11 +133,10 @@ describe('plugin fastify-rabbitmq tests', () => {
       }
 
       expect(err).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered.'))
-
-    });
+    })
 
     test.skip("register - can't be registered twice - namespace  (experiential)", async () => {
-      let err;
+      let err
       try {
         await app.register(fastifyRabbit, {
           urLs: ['amqp://localhost'],
@@ -176,27 +154,22 @@ describe('plugin fastify-rabbitmq tests', () => {
       }
 
       expect(err).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered with namespace: error'))
-
     })
-
   })
 
   describe('common action tests', () => {
-
     test('ensure basic properties are accessible', async () => {
-
       try {
-        app.register(fastifyRabbit, {
+        await app.register(fastifyRabbit, {
           urLs: ['amqp://localhost']
         })
-        expect(app.rabbitmq).toHaveProperty('createChannel');
-        expect(app.rabbitmq).toHaveProperty('isConnected');
-        expect(app.rabbitmq).toHaveProperty('reconnect');
-        expect(app.rabbitmq).toHaveProperty('close');
+        expect(app.rabbitmq).toHaveProperty('createChannel')
+        expect(app.rabbitmq).toHaveProperty('isConnected')
+        expect(app.rabbitmq).toHaveProperty('reconnect')
+        expect(app.rabbitmq).toHaveProperty('close')
       } catch (e) {
         /* should not error */
       }
-
     })
 
     test('ensure basic properties are accessible via namespace', async () => {
@@ -205,39 +178,35 @@ describe('plugin fastify-rabbitmq tests', () => {
           urLs: ['amqp://localhost'],
           namespace: 'unittest'
         }).ready().then(async () => {
-          expect(app.rabbitmq.unittest).toHaveProperty('createChannel');
-          expect(app.rabbitmq.unittest).toHaveProperty('isConnected');
-          expect(app.rabbitmq.unittest).toHaveProperty('reconnect');
-          expect(app.rabbitmq.unittest).toHaveProperty('close');
+          expect(app.rabbitmq.unittest).toHaveProperty('createChannel')
+          expect(app.rabbitmq.unittest).toHaveProperty('isConnected')
+          expect(app.rabbitmq.unittest).toHaveProperty('reconnect')
+          expect(app.rabbitmq.unittest).toHaveProperty('close')
         })
 
         await app.rabbitmq.unittest.close()
-
       } catch (e) {
         /* should not error */
       }
-
     })
 
     test.skip('ensure basic properties are accessible (experiential)', async () => {
-
       try {
-        app.register(fastifyRabbit, {
+        await app.register(fastifyRabbit, {
           urLs: ['amqp://localhost'],
           enableRPC: true
         })
-        expect(app.rabbitmq).toHaveProperty('createRPCServer');
-        expect(app.rabbitmq).toHaveProperty('createRPCClient');
-        expect(app.rabbitmq).toHaveProperty('createChannel');
-        expect(app.rabbitmq).toHaveProperty('isConnected');
-        expect(app.rabbitmq).toHaveProperty('reconnect');
-        expect(app.rabbitmq).toHaveProperty('close');
+        expect(app.rabbitmq).toHaveProperty('createRPCServer')
+        expect(app.rabbitmq).toHaveProperty('createRPCClient')
+        expect(app.rabbitmq).toHaveProperty('createChannel')
+        expect(app.rabbitmq).toHaveProperty('isConnected')
+        expect(app.rabbitmq).toHaveProperty('reconnect')
+        expect(app.rabbitmq).toHaveProperty('close')
 
         await app.rabbitmq.close()
       } catch (e) {
         /* should not error */
       }
-
     })
 
     test.skip('ensure basic properties are accessible via namespace  (experiential)', async () => {
@@ -247,20 +216,18 @@ describe('plugin fastify-rabbitmq tests', () => {
           namespace: 'unittest',
           enableRPC: true
         }).ready().then(async () => {
-          expect(app.rabbitmq.unittest).toHaveProperty('createRPCServer');
-          expect(app.rabbitmq.unittest).toHaveProperty('createRPCClient');
-          expect(app.rabbitmq.unittest).toHaveProperty('createChannel');
-          expect(app.rabbitmq.unittest).toHaveProperty('isConnected');
-          expect(app.rabbitmq.unittest).toHaveProperty('reconnect');
-          expect(app.rabbitmq.unittest).toHaveProperty('close');
+          expect(app.rabbitmq.unittest).toHaveProperty('createRPCServer')
+          expect(app.rabbitmq.unittest).toHaveProperty('createRPCClient')
+          expect(app.rabbitmq.unittest).toHaveProperty('createChannel')
+          expect(app.rabbitmq.unittest).toHaveProperty('isConnected')
+          expect(app.rabbitmq.unittest).toHaveProperty('reconnect')
+          expect(app.rabbitmq.unittest).toHaveProperty('close')
         })
 
         await app.rabbitmq.unittest.close()
-
       } catch (e) {
         /* should not error */
       }
-
     })
 
     test('register with log level: debug', async () => {
@@ -285,7 +252,7 @@ describe('plugin fastify-rabbitmq tests', () => {
           await app.rabbitmq.close()
         })
       } catch (e) {
-        /!* should not error *!/
+        /* should not error */
       }
     })
 
@@ -313,7 +280,6 @@ describe('plugin fastify-rabbitmq tests', () => {
         })
 
         expect(app.rabbitmq.isConnected()).toBe(false)
-
       } catch (e) {
         /* should not error */
       }
@@ -331,9 +297,6 @@ describe('plugin fastify-rabbitmq tests', () => {
       } catch (e) {
         /* should not error */
       }
-
     })
-
   })
-
-});
+})

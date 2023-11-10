@@ -1,18 +1,15 @@
-import {ConfirmChannel, Message} from "amqplib";
-import fastify, {FastifyInstance} from "fastify";
-import {defer} from 'promise-tools';
-import {Channel} from "../src";
-import fastifyRabbit from "../src";
-import {errors} from "../src/errors";
+import { ConfirmChannel, Message } from 'amqplib'
+import fastify, { FastifyInstance } from 'fastify'
+import { defer } from 'promise-tools'
+import fastifyRabbit, { Channel } from '../src'
+import { errors } from '../src/errors'
 
 describe('fastify-rabbitmq sample app tests', () => {
-
-  describe("create a receiver and a sender", () => {
-
-    let app: FastifyInstance;
+  describe('create a receiver and a sender', () => {
+    let app: FastifyInstance
 
     beforeAll(async () => {
-      app = fastify({logger: false})
+      app = fastify({ logger: false })
 
       await app.register(fastifyRabbit, {
         urLs: ['amqp://localhost']
@@ -20,190 +17,180 @@ describe('fastify-rabbitmq sample app tests', () => {
 
       app.rabbitmq.on('connect', function (result) {
         app.log.debug(result)
-      });
+      })
 
       app.rabbitmq.on('disconnect', function (err) {
-        app.log.debug(err);
-      });
+        app.log.debug(err)
+      })
 
-      await app.listen();
+      await app.listen()
 
-      await app.ready();
-
+      await app.ready()
     })
 
     afterAll(async () => {
       await app.close()
     })
 
-    test("create/get sender (foo) and receiver/listener (bar)", async () => {
-
+    test('create/get sender (foo) and receiver/listener (bar)', async () => {
       const DATE = Date.now()
 
       const LISTEN_QUEUE_NAME = 'bar'
 
-      const onMessage = async function (data: Message | null) {
-        if (data == null) return;
-        const message = JSON.parse(data.content.toString()) as string;
-        channelWrapper.ack(data);
+      const onMessage = (data: Message | null): void => {
+        if (data == null) return
+        const message = JSON.parse(data.content.toString()) as string
+        channelWrapper.ack(data)
 
-        expect(message).toMatchObject({time: DATE})
+        expect(message).toMatchObject({ time: DATE })
 
-        await channelWrapper.close()
-        await sendChannelFunc.close()
+        void channelWrapper.close()
+        void sendChannelFunc.close()
       }
 
       // create the channel 'bar'
       const channelWrapper = app.rabbitmq.createChannel({
         name: LISTEN_QUEUE_NAME,
-        setup: function (channel: Channel) {
-          return Promise.all([
-            channel.assertQueue(LISTEN_QUEUE_NAME, {durable: true}),
+        setup: async function (channel: Channel) {
+          return await Promise.all([
+            channel.assertQueue(LISTEN_QUEUE_NAME, { durable: true }),
             channel.prefetch(1),
             channel.consume(LISTEN_QUEUE_NAME, onMessage)
-          ]);
+          ])
         }
-      });
+      })
 
-      const SEND_QUEUE_NAME = 'foo';
+      const SEND_QUEUE_NAME = 'foo'
 
       // create the channel 'foo'
       const sendChannelFunc = app.rabbitmq.createChannel({
         name: SEND_QUEUE_NAME,
         json: true,
-        setup: function (channel: Channel) {
-          return channel.assertQueue(SEND_QUEUE_NAME, {durable: true});
+        setup: async function (channel: Channel) {
+          return await channel.assertQueue(SEND_QUEUE_NAME, { durable: true })
         }
-      });
+      })
 
       // get the channel
       const sendChannel = app.rabbitmq.findChannel(SEND_QUEUE_NAME)
 
       expect(sendChannel).toBe(sendChannelFunc)
 
-      await sendChannel?.sendToQueue('bar', {time: DATE})
-
-
+      await sendChannel?.sendToQueue('bar', { time: DATE })
     })
-
   })
 
-  describe("basic RPC/direct-reply-to tests", () => {
-
-    let app: FastifyInstance;
+  describe('basic RPC/direct-reply-to tests', () => {
+    let app: FastifyInstance
 
     beforeAll(async () => {
       app = fastify()
 
-      app.register(fastifyRabbit, {
+      await app.register(fastifyRabbit, {
         urLs: ['amqp://localhost']
       })
 
-      await app.listen();
+      await app.listen()
 
-      await app.ready();
+      await app.ready()
 
       app.rabbitmq.on('connect', function (result) {
         app.log.debug(result)
-      });
+      })
 
       app.rabbitmq.on('disconnect', function (err) {
-        app.log.debug(err);
-      });
-
+        app.log.debug(err)
+      })
     })
 
     test('RPC', async () => {
+      const queueName = 'testQueueRpc'
+      let rpcClientQueueName = ''
 
-      const queueName = 'testQueueRpc';
-      let rpcClientQueueName = '';
-
-      const result = defer<string | undefined>();
+      const result = defer<string | undefined>()
 
       const rpcClient = app.rabbitmq.createChannel({
         setup: async (channel: ConfirmChannel) => {
-          const qok = await channel.assertQueue('', {exclusive: true});
-          rpcClientQueueName = qok.queue;
+          const qok = await channel.assertQueue('', { exclusive: true })
+          rpcClientQueueName = qok.queue
 
           await channel.consume(
             rpcClientQueueName,
             (message) => {
-              result.resolve(message?.content.toString());
+              result.resolve(message?.content.toString())
             },
-            {noAck: true}
-          );
-        },
-      });
+            { noAck: true }
+          )
+        }
+      })
 
       const rpcServer = app.rabbitmq.createChannel({
         setup: async (channel: ConfirmChannel) => {
-          await channel.assertQueue(queueName, {durable: false, autoDelete: true});
-          await channel.prefetch(1);
+          await channel.assertQueue(queueName, { durable: false, autoDelete: true })
+          await channel.prefetch(1)
           await channel.consume(
             queueName,
             (message) => {
-              if (message) {
+              if (message != null) {
                 channel.sendToQueue(message.properties.replyTo, Buffer.from('world'), {
-                  correlationId: message.properties.correlationId,
-                });
+                  correlationId: message.properties.correlationId
+                })
               }
             },
-            {noAck: true}
-          );
-        },
-      });
+            { noAck: true }
+          )
+        }
+      })
 
       await rpcClient.waitForConnect()
 
       await rpcClient.sendToQueue(queueName, 'hello', {
         correlationId: 'test',
         replyTo: rpcClientQueueName,
-        messageId: 'asdkasldk',
-      });
+        messageId: 'asdkasldk'
+      })
 
-      const reply = await result.promise;
-      expect(reply).toBe('world');
+      const reply = await result.promise
+      expect(reply).toBe('world')
 
-      await rpcClient.close();
-      await rpcServer.close();
-
+      await rpcClient.close()
+      await rpcServer.close()
     })
 
-    test("direct-reply-to", async () => {
-
-      const rpcClientQueueName = 'amq.rabbitmq.reply-to';
-      const queueName = 'testQueueRpc';
-      const result = defer<string | undefined>();
+    test('direct-reply-to', async () => {
+      const rpcClientQueueName = 'amq.rabbitmq.reply-to'
+      const queueName = 'testQueueRpc'
+      const result = defer<string | undefined>()
 
       const rpcClient = app.rabbitmq.createChannel({
         setup: async (channel: ConfirmChannel) => {
           await channel.consume(
             rpcClientQueueName,
             (message) => {
-              result.resolve(message?.content.toString());
+              result.resolve(message?.content.toString())
             },
-            {noAck: true}
-          );
-        },
-      });
+            { noAck: true }
+          )
+        }
+      })
 
       const rpcServer = app.rabbitmq.createChannel({
         setup: async (channel: ConfirmChannel) => {
-          await channel.assertQueue(queueName, {durable: false, autoDelete: true});
-          await channel.prefetch(1);
+          await channel.assertQueue(queueName, { durable: false, autoDelete: true })
+          await channel.prefetch(1)
           await channel.consume(
             queueName,
             (message) => {
-              if (message) {
+              if (message != null) {
                 channel.sendToQueue(message.properties.replyTo, Buffer.from('world'), {
-                  correlationId: message.properties.correlationId,
-                });
+                  correlationId: message.properties.correlationId
+                })
               }
             },
-            {noAck: true}
-          );
-        },
-      });
+            { noAck: true }
+          )
+        }
+      })
 
       await rpcServer.waitForConnect()
       await rpcClient.waitForConnect()
@@ -212,136 +199,129 @@ describe('fastify-rabbitmq sample app tests', () => {
       await rpcClient.sendToQueue(queueName, 'hello', {
         correlationId: 'test',
         replyTo: rpcClientQueueName,
-        messageId: 'asdkasldk',
-      });
+        messageId: 'asdkasldk'
+      })
 
-      const reply = await result.promise;
-      expect(reply).toBe('world');
+      const reply = await result.promise
+      expect(reply).toBe('world')
 
-      await rpcClient.close();
-      await rpcServer.close();
-
+      await rpcClient.close()
+      await rpcServer.close()
     })
-
   })
 
-  describe("basic RPC/direct-reply-to tests, namespace", () => {
-
-    let app: FastifyInstance;
+  describe('basic RPC/direct-reply-to tests, namespace', () => {
+    let app: FastifyInstance
 
     beforeAll(async () => {
       app = fastify()
 
-      app.register(fastifyRabbit, {
+      await app.register(fastifyRabbit, {
         urLs: ['amqp://localhost'],
         namespace: 'helloworld'
       })
 
-      await app.listen();
+      await app.listen()
 
-      await app.ready();
+      await app.ready()
 
       app.rabbitmq.helloworld.on('connect', function (result) {
         app.log.debug(result)
-      });
+      })
 
       app.rabbitmq.helloworld.on('disconnect', function (err) {
-        app.log.debug(err);
-      });
-
+        app.log.debug(err)
+      })
     })
 
     test('RPC', async () => {
+      const queueName = 'testQueueRpc'
+      let rpcClientQueueName = ''
 
-      const queueName = 'testQueueRpc';
-      let rpcClientQueueName = '';
-
-      const result = defer<string | undefined>();
+      const result = defer<string | undefined>()
 
       const rpcClient = app.rabbitmq.helloworld.createChannel({
         setup: async (channel: ConfirmChannel) => {
-          const qok = await channel.assertQueue('', {exclusive: true});
-          rpcClientQueueName = qok.queue;
+          const qok = await channel.assertQueue('', { exclusive: true })
+          rpcClientQueueName = qok.queue
 
           await channel.consume(
             rpcClientQueueName,
             (message) => {
-              result.resolve(message?.content.toString());
+              result.resolve(message?.content.toString())
             },
-            {noAck: true}
-          );
-        },
-      });
+            { noAck: true }
+          )
+        }
+      })
 
       const rpcServer = app.rabbitmq.helloworld.createChannel({
         setup: async (channel: ConfirmChannel) => {
-          await channel.assertQueue(queueName, {durable: false, autoDelete: true});
-          await channel.prefetch(1);
+          await channel.assertQueue(queueName, { durable: false, autoDelete: true })
+          await channel.prefetch(1)
           await channel.consume(
             queueName,
             (message) => {
-              if (message) {
+              if (message != null) {
                 channel.sendToQueue(message.properties.replyTo, Buffer.from('world'), {
-                  correlationId: message.properties.correlationId,
-                });
+                  correlationId: message.properties.correlationId
+                })
               }
             },
-            {noAck: true}
-          );
-        },
-      });
+            { noAck: true }
+          )
+        }
+      })
 
       await rpcClient.waitForConnect()
 
       await rpcClient.sendToQueue(queueName, 'hello', {
         correlationId: 'test',
         replyTo: rpcClientQueueName,
-        messageId: 'asdkasldk',
-      });
+        messageId: 'asdkasldk'
+      })
 
-      const reply = await result.promise;
-      expect(reply).toBe('world');
+      const reply = await result.promise
+      expect(reply).toBe('world')
 
-      await rpcClient.close();
-      await rpcServer.close();
-
+      await rpcClient.close()
+      await rpcServer.close()
     })
 
-    test("direct-reply-to", async () => {
-
-      const rpcClientQueueName = 'amq.rabbitmq.reply-to';
-      const queueName = 'testQueueRpc';
-      const result = defer<string | undefined>();
+    test('direct-reply-to', async () => {
+      const rpcClientQueueName = 'amq.rabbitmq.reply-to'
+      const queueName = 'testQueueRpc'
+      const result = defer<string | undefined>()
 
       const rpcClient = app.rabbitmq.helloworld.createChannel({
         setup: async (channel: ConfirmChannel) => {
           await channel.consume(
             rpcClientQueueName,
             (message) => {
-              result.resolve(message?.content.toString());
+              result.resolve(message?.content.toString())
             },
-            {noAck: true}
-          );
-        },
-      });
+            { noAck: true }
+          )
+        }
+      })
 
       const rpcServer = app.rabbitmq.helloworld.createChannel({
         setup: async (channel: ConfirmChannel) => {
-          await channel.assertQueue(queueName, {durable: false, autoDelete: true});
-          await channel.prefetch(1);
+          await channel.assertQueue(queueName, { durable: false, autoDelete: true })
+          await channel.prefetch(1)
           await channel.consume(
             queueName,
             (message) => {
-              if (message) {
+              if (message != null) {
                 channel.sendToQueue(message.properties.replyTo, Buffer.from('world'), {
-                  correlationId: message.properties.correlationId,
-                });
+                  correlationId: message.properties.correlationId
+                })
               }
             },
-            {noAck: true}
-          );
-        },
-      });
+            { noAck: true }
+          )
+        }
+      })
 
       await rpcServer.waitForConnect()
       await rpcClient.waitForConnect()
@@ -350,49 +330,44 @@ describe('fastify-rabbitmq sample app tests', () => {
       await rpcClient.sendToQueue(queueName, 'hello', {
         correlationId: 'test',
         replyTo: rpcClientQueueName,
-        messageId: 'asdkasldk',
-      });
+        messageId: 'asdkasldk'
+      })
 
-      const reply = await result.promise;
-      expect(reply).toBe('world');
+      const reply = await result.promise
+      expect(reply).toBe('world')
 
-      await rpcClient.close();
-      await rpcServer.close();
-
+      await rpcClient.close()
+      await rpcServer.close()
     })
-
   })
 
   describe('complex RPC/direct-reply-to tests', () => {
-
-    let app: FastifyInstance;
+    let app: FastifyInstance
 
     beforeAll(async () => {
       app = fastify()
 
-      app.register(fastifyRabbit, {
+      await app.register(fastifyRabbit, {
         urLs: ['amqp://localhost'],
         enableRPC: true
       })
 
-      await app.listen();
+      await app.listen()
 
-      await app.ready();
+      await app.ready()
 
       app.rabbitmq.on('connect', function (result) {
         app.log.debug(result)
-      });
+      })
 
       app.rabbitmq.on('disconnect', function (err) {
-        app.log.debug(err);
-      });
-
+        app.log.debug(err)
+      })
     })
 
     test('RPC, no queueName passed to createRPCServer', async () => {
-
       try {
-        // @ts-ignore need this for unit testing
+        // @ts-expect-error need this for unit testing
         await app.rabbitmq.createRPCServer()
       } catch (error) {
         expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_USAGE('queueName is missing.'))
@@ -400,17 +375,13 @@ describe('fastify-rabbitmq sample app tests', () => {
     })
 
     test('RPC', async () => {
-
-      const serverInstance = await app.rabbitmq.createRPCServer("unit-testing")
+      const serverInstance = await app.rabbitmq.createRPCServer('unit-testing')
 
       await serverInstance.waitForConnect()
 
-      const clientResult = await app.rabbitmq.createRPCClient<string>("unit-testing")
+      const clientResult = await app.rabbitmq.createRPCClient<string>('unit-testing')
 
       expect(clientResult).toBe('world')
-
     })
-
   })
-
 })

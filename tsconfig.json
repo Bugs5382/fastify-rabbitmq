@@ -28,7 +28,10 @@
     "esModuleInterop": true
   },
   "include": [
-    "./src/**/*"
+    "./src/**/*",
+    "./__tests__/**/*",
+    "./jest.config.ts",
+    "./release.config.js"
   ],
   "compileOnSave": true
 }
