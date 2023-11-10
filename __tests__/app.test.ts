@@ -374,27 +374,38 @@ describe('fastify-rabbitmq sample app tests', () => {
       }
     })
 
-    test('RPC', async () => {
+    test('RPC, onMessage is not a function', async () => {
+      try {
+        // @ts-expect-error need this for unit testing
+        await app.rabbitmq.createRPCServer("queue", "not-a-function")
+      } catch (error) {
+        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_USAGE('onMessage must be a function.'))
+      }
+    })
+
+    test('RPC, adding numbers 1 + 1 = 2', async () => {
 
       /**
        * This is a sample input called "funcAdd" which will add the number passed over by 1.
+       * @since 1.0.0
        * @param input {number} The Number
        * @returns number
        */
-      // @ts-ignore
-      const funcAdd = async (input: number): Promise<number> => {
-        return input + 1;
+      const funcAdd = (input: string): number => {
+        return parseInt(input) + 1;
       }
 
-      const serverInstance = await app.rabbitmq.createRPCServer('unit-testing')
+      // ok setup service instance
+      const serverInstance = await app.rabbitmq.createRPCServer('unit-testing', funcAdd)
 
+      // wait for the server to start before continuing on in the code
       await serverInstance.waitForConnect()
 
       // the first type is the dataInput field
       // the second one is the return type from the client
-      const clientResult = await app.rabbitmq.createRPCClient<string, string>('unit-testing', 'hello')
+      const clientResult = await app.rabbitmq.createRPCClient<string, number>('unit-testing', "1", false)
 
-      expect(clientResult).toBe('hello')
+      expect(Number(clientResult)).toBe(2)
     })
   })
 })

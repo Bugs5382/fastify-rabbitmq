@@ -86,10 +86,15 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
      * @since 1.0.0
      * @param queueName {string} The name of the server queue.
      * This is the name the client must send to work.
+     * @param onMessage {function} How the data is processed.
      */
-    connection.createRPCServer = async (queueName: string): Promise<ChannelWrapper> => {
+    connection.createRPCServer = async (queueName: string, onMessage: any): Promise<ChannelWrapper> => {
       if (typeof queueName === 'undefined') {
         throw new errors.FASTIFY_RABBIT_MQ_ERR_USAGE('queueName is missing.')
+      }
+
+      if (typeof onMessage !== 'function') {
+        throw new errors.FASTIFY_RABBIT_MQ_ERR_USAGE('onMessage must be a function.')
       }
 
       return fastify.rabbitmq.createChannel({
@@ -101,7 +106,8 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
             queueName,
             (message) => {
               if (message != null) {
-                channel.sendToQueue(message.properties.replyTo, Buffer.from(message.content.toString()), {
+                const responseMessage = onMessage(message.content.toString())
+                channel.sendToQueue(message.properties.replyTo, Buffer.from(responseMessage.toString()), {
                   correlationId: message.properties.correlationId
                 })
               }
@@ -117,14 +123,16 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
      * @since 1.0.0
      * @param queueName
      * @param dataInput
+     * @param jsonProcess
      */
-    connection.createRPCClient = async <T, K>(queueName: string, dataInput: T): Promise<K> => {
+    connection.createRPCClient = async <T, K>(queueName: string, dataInput: T, jsonProcess: boolean = true): Promise<K> => {
       const correlationId = randomUUID()
       const messageId = randomUUID()
       const result = defer<any>()
       let rpcClientQueueName = ''
 
       const rpcClient = fastify.rabbitmq.createChannel({
+        json: jsonProcess,
         setup: async (channel: ConfirmChannel) => {
           const qok = await channel.assertQueue('', { exclusive: true })
           rpcClientQueueName = qok.queue
