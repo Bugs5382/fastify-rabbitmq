@@ -338,7 +338,7 @@ describe('fastify-rabbitmq sample app tests', () => {
 
     test('RPC, no queueName passed to createRPCServer', async () => {
       try {
-        // @ts-expect-error need this for unit testing
+        // @ts-expect-error
         await app.rabbitmq.createRPCServer()
       } catch (error) {
         expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_USAGE('queueName is missing.'))

@@ -125,7 +125,7 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
      * @param dataInput
      * @param jsonProcess
      */
-    connection.createRPCClient = async (queueName: string, dataInput: any, jsonProcess: boolean = true): Promise<any> => {
+    connection.createRPCClient = async <T, K>(queueName: string, dataInput: T, jsonProcess: boolean = true): Promise<K> => {
       const correlationId = randomUUID()
       const messageId = randomUUID()
       const result = defer<any>()

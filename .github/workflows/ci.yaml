@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  test:
+  Test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -24,7 +24,7 @@ jobs:
         run: docker-compose up -d
       - name: Run Unit Tests
         run: npm run test:ci
-  release:
+  Release:
     # Only release on push to main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
