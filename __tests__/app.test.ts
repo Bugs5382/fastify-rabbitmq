@@ -375,13 +375,26 @@ describe('fastify-rabbitmq sample app tests', () => {
     })
 
     test('RPC', async () => {
+
+      /**
+       * This is a sample input called "funcAdd" which will add the number passed over by 1.
+       * @param input {number} The Number
+       * @returns number
+       */
+      // @ts-ignore
+      const funcAdd = async (input: number): Promise<number> => {
+        return input + 1;
+      }
+
       const serverInstance = await app.rabbitmq.createRPCServer('unit-testing')
 
       await serverInstance.waitForConnect()
 
-      const clientResult = await app.rabbitmq.createRPCClient<string>('unit-testing')
+      // the first type is the dataInput field
+      // the second one is the return type from the client
+      const clientResult = await app.rabbitmq.createRPCClient<string, string>('unit-testing', 'hello')
 
-      expect(clientResult).toBe('world')
+      expect(clientResult).toBe('hello')
     })
   })
 })

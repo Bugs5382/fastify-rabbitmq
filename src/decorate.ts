@@ -7,7 +7,7 @@ export interface FastifyRabbitMQAmqpConnectionManager extends AmqpConnectionMana
    * @param queueName
    * @example
    */
-  createRPCClient: <T>(queueName: string) => Promise<T>
+  createRPCClient: <T, K>(queueName: string, dataInput: T) => Promise<K>
   /**
    * Used to create an RPC Server
    * @since 1.0.0

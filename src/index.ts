@@ -101,7 +101,7 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
             queueName,
             (message) => {
               if (message != null) {
-                channel.sendToQueue(message.properties.replyTo, Buffer.from('world'), {
+                channel.sendToQueue(message.properties.replyTo, Buffer.from(message.content.toString()), {
                   correlationId: message.properties.correlationId
                 })
               }
@@ -116,8 +116,9 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
      *
      * @since 1.0.0
      * @param queueName
+     * @param dataInput
      */
-    connection.createRPCClient = async (queueName: string): Promise<any> => {
+    connection.createRPCClient = async <T, K>(queueName: string, dataInput: T): Promise<K> => {
       const correlationId = randomUUID()
       const messageId = randomUUID()
       const result = defer<any>()
@@ -140,7 +141,7 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, options, done) 
 
       await rpcClient.waitForConnect()
 
-      await rpcClient.sendToQueue(queueName, 'hello', {
+      await rpcClient.sendToQueue(queueName, dataInput, {
         correlationId,
         replyTo: rpcClientQueueName,
         messageId
