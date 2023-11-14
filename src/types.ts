@@ -1,4 +1,4 @@
-import { AmqpConnectionManager, AmqpConnectionManagerOptions, ConnectionUrl } from '../../node-amqp-connection-manager'
+import AmqpConnectionManager from "amqp-connection-manager/dist/types/AmqpConnectionManager";
 import { FastifyRabbitMQAmqpConnectionManager } from './decorate'
 
 declare module 'fastify' {
@@ -20,23 +20,6 @@ export declare namespace fastifyRabbitMQ {
      * Nested Namespace
      */
     [namespace: string]: AmqpConnectionManager
-  }
-
-  export interface FastifyRabbitMQOptions extends AmqpConnectionManagerOptions {
-    /**
-     * Enable RPC Built In System
-     *
-     * Warning: Experiential
-     */
-    enableRPC?: boolean
-    /**
-     * Namespace
-     */
-    namespace?: string
-    /**
-     * Connection URLS for AmqpConnectionManager
-     */
-    urLs: ConnectionUrl | ConnectionUrl[] | undefined | null
   }
 
 }
