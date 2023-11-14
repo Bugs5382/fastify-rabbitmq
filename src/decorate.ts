@@ -19,7 +19,7 @@ export interface FastifyRabbitMQOptions {
   /**
    * URL Settings
    */
-  urls: string[] | string
+  urls: string[] | string | null
 }
 
 export type FastifyRabbitMQAmqpConnectionManager = AmqpConnectionManager & {

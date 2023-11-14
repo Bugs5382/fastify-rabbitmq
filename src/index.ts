@@ -55,6 +55,7 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, opts, done) => 
 
   const {
     enableRPC = false,
+    urls = null,
     connectionOptions
   } = opts
 
@@ -64,10 +65,10 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, opts, done) => 
   let connection
 
   if (typeof enableRPC !== 'undefined' && !enableRPC) {
-    connection = await amqp.connect(null, {connectionOptions})
+    connection = await amqp.connect(urls, {connectionOptions})
 
   } else {
-    connection = await amqp.connect(null, {connectionOptions}) as FastifyRabbitMQAmqpConnectionManager
+    connection = await amqp.connect(urls, {connectionOptions}) as FastifyRabbitMQAmqpConnectionManager
 
     /**
      * Used to create an RPC Client and send the "input" to the corresponding RPC server.
