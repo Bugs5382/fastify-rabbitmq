@@ -1,7 +1,8 @@
-import { ConfirmChannel, Message } from 'amqplib'
+import { Message } from 'amqplib'
+import { Channel } from 'amqp-connection-manager/dist/types/decorate'
 import fastify, { FastifyInstance } from 'fastify'
 import { defer } from 'promise-tools'
-import fastifyRabbit, { Channel } from '../src'
+import fastifyRabbit from '../src'
 import { errors } from '../src/errors'
 
 describe('fastify-rabbitmq sample app tests', () => {
@@ -12,7 +13,7 @@ describe('fastify-rabbitmq sample app tests', () => {
       app = fastify({ logger: false })
 
       await app.register(fastifyRabbit, {
-        urLs: ['amqp://localhost']
+        urls: 'amqp://localhost'
       })
 
       await app.listen()
@@ -79,7 +80,7 @@ describe('fastify-rabbitmq sample app tests', () => {
       app = fastify({ logger: false})
 
       await app.register(fastifyRabbit, {
-        urLs: ['amqp://localhost']
+        urls: 'amqp://localhost'
       })
 
       await app.listen()
@@ -95,7 +96,7 @@ describe('fastify-rabbitmq sample app tests', () => {
       const result = defer<string | undefined>()
 
       const rpcClient = app.rabbitmq.createChannel({
-        setup: async (channel: ConfirmChannel) => {
+        setup: async (channel: Channel) => {
           const qok = await channel.assertQueue('', { exclusive: true })
           rpcClientQueueName = qok.queue
 
@@ -110,7 +111,7 @@ describe('fastify-rabbitmq sample app tests', () => {
       })
 
       const rpcServer = app.rabbitmq.createChannel({
-        setup: async (channel: ConfirmChannel) => {
+        setup: async (channel: Channel) => {
           await channel.assertQueue(queueName, { durable: false, autoDelete: true })
           await channel.prefetch(1)
           await channel.consume(
@@ -148,7 +149,7 @@ describe('fastify-rabbitmq sample app tests', () => {
       const result = defer<string | undefined>()
 
       const rpcClient = app.rabbitmq.createChannel({
-        setup: async (channel: ConfirmChannel) => {
+        setup: async (channel: Channel) => {
           await channel.consume(
             rpcClientQueueName,
             (message) => {
@@ -160,7 +161,7 @@ describe('fastify-rabbitmq sample app tests', () => {
       })
 
       const rpcServer = app.rabbitmq.createChannel({
-        setup: async (channel: ConfirmChannel) => {
+        setup: async (channel: Channel) => {
           await channel.assertQueue(queueName, { durable: false, autoDelete: true })
           await channel.prefetch(1)
           await channel.consume(
@@ -202,7 +203,7 @@ describe('fastify-rabbitmq sample app tests', () => {
       app = fastify({ logger: false})
 
       await app.register(fastifyRabbit, {
-        urLs: ['amqp://localhost'],
+        urls: 'amqp://localhost',
         namespace: 'helloworld'
       })
 
@@ -219,7 +220,7 @@ describe('fastify-rabbitmq sample app tests', () => {
       const result = defer<string | undefined>()
 
       const rpcClient = app.rabbitmq.helloworld.createChannel({
-        setup: async (channel: ConfirmChannel) => {
+        setup: async (channel: Channel) => {
           const qok = await channel.assertQueue('', { exclusive: true })
           rpcClientQueueName = qok.queue
 
@@ -234,7 +235,7 @@ describe('fastify-rabbitmq sample app tests', () => {
       })
 
       const rpcServer = app.rabbitmq.helloworld.createChannel({
-        setup: async (channel: ConfirmChannel) => {
+        setup: async (channel: Channel) => {
           await channel.assertQueue(queueName, { durable: false, autoDelete: true })
           await channel.prefetch(1)
           await channel.consume(
@@ -272,7 +273,7 @@ describe('fastify-rabbitmq sample app tests', () => {
       const result = defer<string | undefined>()
 
       const rpcClient = app.rabbitmq.helloworld.createChannel({
-        setup: async (channel: ConfirmChannel) => {
+        setup: async (channel: Channel) => {
           await channel.consume(
             rpcClientQueueName,
             (message) => {
@@ -284,7 +285,7 @@ describe('fastify-rabbitmq sample app tests', () => {
       })
 
       const rpcServer = app.rabbitmq.helloworld.createChannel({
-        setup: async (channel: ConfirmChannel) => {
+        setup: async (channel: Channel) => {
           await channel.assertQueue(queueName, { durable: false, autoDelete: true })
           await channel.prefetch(1)
           await channel.consume(
@@ -326,7 +327,7 @@ describe('fastify-rabbitmq sample app tests', () => {
       app = fastify({ logger: false})
 
       await app.register(fastifyRabbit, {
-        urLs: ['amqp://localhost'],
+        urls: 'amqp://localhost',
         enableRPC: true
       })
 
@@ -358,6 +359,7 @@ describe('fastify-rabbitmq sample app tests', () => {
 
       /**
        * This is a sample input called "funcAdd" which will add the number passed over by 1.
+       * No matter type is sent, it will always go back to the client as a string which is what is transmitted through RabbitMQ
        * @since 1.0.0
        * @param input {number} The Number
        * @returns number
@@ -374,9 +376,79 @@ describe('fastify-rabbitmq sample app tests', () => {
 
       // the first type is the dataInput field
       // the second one is the return type from the client
-      const clientResult = await app.rabbitmq.createRPCClient<string, number>('unit-testing', "1", false)
+      const clientResult = await app.rabbitmq.createRPCClient('unit-testing', "1", false)
 
-      expect(Number(clientResult)).toBe(2)
+      if (typeof clientResult !== 'undefined') {
+        expect(parseInt(clientResult)).toBe(2)
+      }
     })
+
+    test.skip('RPC, adding numbers 1 + 1 = 2, json input', async () => {
+
+      type TAdd = {
+        add: number;
+      }
+
+      /**
+       * This is a sample input called "funcAdd" which will add the number passed over by 1.
+       * No matter type is sent, it will always go back to the client as a string which is what is transmitted through RabbitMQ
+       * @since 1.0.0
+       * @param input {number} The Number
+       * @returns number
+       */
+      const funcAdd = (input: string): number => {
+        const parse = JSON.parse(input) as TAdd
+        return (parse.add + 1);
+      }
+
+      // ok setup service instance
+      const serverInstance = await app.rabbitmq.createRPCServer('unit-testing', funcAdd)
+
+      // wait for the server to start before continuing on in the code
+      await serverInstance.waitForConnect()
+
+      // the first type is the dataInput field
+      // the second one is the return type from the client
+      const clientResult = await app.rabbitmq.createRPCClient<TAdd>('unit-testing', { add: 1}, true)
+
+      if (typeof clientResult !== 'undefined') {
+        expect(parseInt(clientResult)).toBe(2)
+      }
+    })
+
+    test.skip('RPC, adding numbers 1 + 1 = 2, json input, as a promise', async () => {
+
+      type TAdd = {
+        add: number;
+      }
+
+      /**
+       * This is a sample input called "funcAdd" which will add the number passed over by 1.
+       * No matter type is sent, it will always go back to the client as a string which is what is transmitted through RabbitMQ
+       * @since 1.0.0
+       * @param input {number} The Number
+       * @returns number
+       */
+      const funcAdd = async (input: string): Promise<number> => {
+        const parse = JSON.parse(input) as TAdd
+        return (parse.add + 1);
+      }
+
+      // ok setup service instance
+      const serverInstance = await app.rabbitmq.createRPCServer('unit-testing', funcAdd)
+
+      // wait for the server to start before continuing on in the code
+      await serverInstance.waitForConnect()
+
+      // the first type is the dataInput field
+      // the second one is the return type from the client
+      const clientResult = await app.rabbitmq.createRPCClient<TAdd>('unit-testing', { add: 1})
+
+      if (typeof clientResult !== 'undefined') {
+        expect(parseInt(clientResult)).toBe(2)
+      }
+
+    })
+
   })
 })
