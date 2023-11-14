@@ -1,10 +1,10 @@
 import amqp from "amqp-connection-manager";
 import { Channel } from "amqp-connection-manager/dist/types/decorate";
 import ChannelWrapper from "amqp-connection-manager/dist/types/ChannelWrapper";
-import cryptoRandomString from "crypto-random-string";
 import {FastifyInstance} from "fastify";
 import fp from 'fastify-plugin'
 import { defer } from 'promise-tools'
+import * as randomstring from "randomstring";
 import {FastifyRabbitMQAmqpConnectionManager, FastifyRabbitMQOptions} from "./decorate";
 import { errors } from './errors'
 import { validateOpts } from './validation'
@@ -77,8 +77,8 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, opts, done) => 
      * @param jsonProcess
      */
     connection.createRPCClient = async <T>(queueName: string, dataInput: T, jsonProcess: boolean = true): Promise<string | undefined> => {
-      const correlationId = cryptoRandomString({length: 10, type: 'url-safe'});
-      const messageId = cryptoRandomString({length: 10, type: 'url-safe'});
+      const correlationId = randomstring.generate();
+      const messageId = randomstring.generate()
       const result = defer<string | undefined>()
       let rpcClientQueueName = ''
 
