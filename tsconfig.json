@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "ES2022",
     "module": "es6",
     "lib": [
-      "es2018"
+      "es2021"
     ],
     "allowJs": false,
     "declaration": true,
