@@ -44,14 +44,14 @@ describe('fastify-rabbitmq sample app tests', () => {
 
       await app.rabbitmq.queueDelete(LISTEN_QUEUE_NAME)
 
-      sub = await app.rabbitmq.createConsumer({
+      sub = app.rabbitmq.createConsumer({
         queue: LISTEN_QUEUE_NAME,
         queueOptions: {durable: true},
         qos: {prefetchCount: 2}
       }, async (msg: any) => {
-        expect(msg.body.id).toBe(1)
-        expect(msg.body.name).toBe('Alan Turing')
-        dfd.resolve()
+        expect(msg.body.id).toBe(1);
+        expect(msg.body.name).toBe('Alan Turing');
+        dfd.resolve();
       })
 
       await sleep(1)
@@ -75,17 +75,17 @@ describe('fastify-rabbitmq sample app tests', () => {
 
       await app.rabbitmq.queueDelete(LISTEN_RPC_NAME)
 
-      sub = await app.rabbitmq.createConsumer({
+      sub = app.rabbitmq.createConsumer({
         queue: LISTEN_RPC_NAME
       }, async (_req: any, reply: any) => {
-        await reply('pong')
+        await reply('pong');
       })
 
       await sleep(1)
 
       await expectEvent(sub, 'ready')
 
-      pub = await app.rabbitmq.createRPCClient({confirm: true})
+      pub = app.rabbitmq.createRPCClient({confirm: true})
 
       const res = await pub.send(LISTEN_RPC_NAME, 'ping')
 
@@ -136,14 +136,14 @@ describe('fastify-rabbitmq sample app tests', () => {
 
       await app.rabbitmq.unittest.queueDelete(LISTEN_QUEUE_NAME)
 
-      sub = await app.rabbitmq.unittest.createConsumer({
+      sub = app.rabbitmq.unittest.createConsumer({
         queue: LISTEN_QUEUE_NAME,
         queueOptions: {durable: true},
         qos: {prefetchCount: 2}
       }, async (msg: any) => {
-        expect(msg.body.id).toBe(1)
-        expect(msg.body.name).toBe('Alan Turing')
-        dfd.resolve()
+        expect(msg.body.id).toBe(1);
+        expect(msg.body.name).toBe('Alan Turing');
+        dfd.resolve();
       })
 
       await sleep(1)
@@ -167,17 +167,17 @@ describe('fastify-rabbitmq sample app tests', () => {
 
       await app.rabbitmq.unittest.queueDelete(LISTEN_RPC_NAME)
 
-      sub = await app.rabbitmq.unittest.createConsumer({
+      sub = app.rabbitmq.unittest.createConsumer({
         queue: LISTEN_RPC_NAME
       }, async (_req: any, reply: any) => {
-        await reply('pong')
+        await reply('pong');
       })
 
       await sleep(1)
 
       await expectEvent(sub, 'ready')
 
-      pub = await app.rabbitmq.unittest.createRPCClient({confirm: true})
+      pub = app.rabbitmq.unittest.createRPCClient({confirm: true})
 
       const res = await pub.send(LISTEN_RPC_NAME, 'ping')
 
