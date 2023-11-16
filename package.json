@@ -29,6 +29,7 @@
     "test:coverage": "jest --coverage",
     "typedoc": "typedoc",
     "typedoc:watch": "typedoc -watch",
+    "semantic-release:dryRun": "semantic-release --dry-run",
     "update": "npx npm-check-updates -u && npm install && npm run test"
   },
   "repository": {
@@ -58,7 +59,9 @@
   },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^11.1.0",
     "@semantic-release/git": "^10.0.1",
+    "@semantic-release/release-notes-generator": "^12.1.0",
     "@types/jest": "^29.5.8",
     "@types/node": "^20.9.0",
     "@types/randomstring": "^1.1.11",
