@@ -1,5 +1,5 @@
 import fastify, {FastifyInstance} from 'fastify'
-import fastifyRabbit from '../src'
+import fastifyRabbit from "../src";
 import {errors} from '../src/errors'
 
 let app: FastifyInstance

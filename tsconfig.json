@@ -31,7 +31,6 @@
     "./src/**/*"
   ],
   "exclude": [
-    "./__tests__/**/*",
     "./jest.config.ts",
     "./release.config.js"
   ],

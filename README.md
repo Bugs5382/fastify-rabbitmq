@@ -10,7 +10,7 @@ The build exports this to valid ESM and CJS for ease of cross-compatibility.
 1. [Install](#install)
 2. [Basic Usage](#basic-usage)
 3. [Full Documentation](#full-documentation)
-    1. [Options](#options)
+   1) [Options](#options)
 4. [Acknowledgements](#acknowledgements)
 5. [License](#license)
 

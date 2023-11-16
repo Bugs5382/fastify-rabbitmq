@@ -1,5 +1,5 @@
-import { FastifyRabbitMQOptions } from './decorate'
-import { errors } from './errors'
+import { FastifyRabbitMQOptions } from './decorate.js'
+import { errors } from './errors.js'
 
 export const validateOpts = async (options: FastifyRabbitMQOptions): Promise<void> => {
   // Mandatory

@@ -1,6 +1,6 @@
 import fastify, {FastifyInstance} from 'fastify'
 import {Consumer, Publisher, RPCClient} from "rabbitmq-client";
-import fastifyRabbit from '../src'
+import fastifyRabbit from "../src";
 import {createDeferred, expectEvent, sleep} from "./__utils__/utils";
 
 describe('fastify-rabbitmq sample app tests', () => {
