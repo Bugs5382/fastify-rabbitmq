@@ -28,7 +28,7 @@
     "esModuleInterop": true
   },
   "include": [
-    "./src/**/*"
+    "./src/**/*.ts"
   ],
   "exclude": [
     "./jest.config.ts",
