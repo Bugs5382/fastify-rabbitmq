@@ -43,5 +43,5 @@ jobs:
       - name: semantic-release
         run: npm run semantic-release
         env:
-          GH_TOKEN: ${{ secrets.DEPLOY_GH_TOKEN }}
+          GITLAB_TOKEN: $CI_JOB_TOKEN
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
