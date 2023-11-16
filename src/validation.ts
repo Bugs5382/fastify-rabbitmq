@@ -1,23 +1,16 @@
-import { errors } from './errors'
+import { FastifyRabbitMQOptions } from './decorate.js'
+import { errors } from './errors.js'
 
-export const validateOpts = async (opts: any): Promise<void> => {
+export const validateOpts = async (options: FastifyRabbitMQOptions): Promise<void> => {
   // Mandatory
-  if (typeof opts.urLs === 'undefined' && typeof opts.findServers === 'undefined') {
-    throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('urLs or findServers must be defined.')
+  if (typeof options.connection === 'undefined') {
+    throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('connection or findServers must be defined.')
   }
 
   // Mandatory
-  if (typeof opts.urLs !== 'undefined' && opts.urLs.length < 1) {
-    throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('urLs must have one item in the array.')
-  }
-
-  // Optional
-  if (typeof opts.heartbeatIntervalInSeconds !== 'undefined' && opts.heartbeatIntervalInSeconds < 0) {
-    throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('heartbeatIntervalInSeconds must be a valid number greater than or equal to 0.')
-  }
-
-  // Optional
-  if (typeof opts.reconnectTimeInSeconds !== 'undefined' && opts.reconnectTimeInSeconds < 0) {
-    throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('reconnectTimeInSeconds must be a valid number greater than or equal to 0.')
+  if (typeof options.connection !== 'undefined') {
+    if (typeof options.connection !== 'object') {
+      // we need to do some sort of check here to make sure RabbitMQOptions is "valid"
+    }
   }
 }

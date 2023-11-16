@@ -1,81 +1,190 @@
-import {ConsumeMessage} from "amqplib";
-import fastify, {FastifyInstance} from "fastify";
-import {Channel} from "../src";
+import fastify, {FastifyInstance} from 'fastify'
+import {Consumer, Publisher, RPCClient} from "rabbitmq-client";
 import fastifyRabbit from "../src";
+import {createDeferred, expectEvent, sleep} from "./__utils__/utils";
 
 describe('fastify-rabbitmq sample app tests', () => {
 
-  describe("create a receiver and a sender", () => {
+  describe('no namespace', () => {
 
-    let app: FastifyInstance;
+    let app: FastifyInstance
+    // @ts-ignore
+    let sub: Consumer
+    // @ts-ignore
+    let pub: Publisher | RPCClient
 
-    beforeAll(async () => {
+    beforeEach(async () => {
       app = fastify()
 
-      app.register(fastifyRabbit, {
-        urLs: ['amqp://localhost']
+      await app.register(fastifyRabbit, {
+        connection: 'amqp://guest:guest@localhost'
       })
 
-      await app.listen({port: 3000});
+      await app.listen()
 
       await app.ready()
 
-      app.rabbitmq.on('connect', function (result) {
-        app.log.debug(result)
-      });
-
-      app.rabbitmq.on('disconnect', function (err) {
-        app.log.debug(err);
-      });
     })
 
-    it("create/get sender (foo) and receiver/listener (bar)", async () => {
+    afterEach(async () => {
 
-      const DATE = Date.now()
+      await pub.close()
 
-      const LISTEN_QUEUE_NAME = 'bar'
+      await sub.close()
 
-      const onMessage = function(data: ConsumeMessage | null) {
-        if (data == null) return;
-        const message = JSON.parse(data.content.toString()) as string;
-        channelWrapper.ack(data);
-        expect(message).toBe(DATE.toString())
-      }
+      await app.rabbitmq.close()
 
-      // create the channel 'bar'
-      const channelWrapper = app.rabbitmq.createChannel({
-        name: LISTEN_QUEUE_NAME,
-        setup: function(channel: Channel) {
-          return Promise.all([
-            channel.assertQueue(LISTEN_QUEUE_NAME, {durable: true}),
-            channel.prefetch(1),
-            channel.consume(LISTEN_QUEUE_NAME, onMessage)
-          ]);
-        }
-      });
+      await app.close()
+    })
 
-      const SEND_QUEUE_NAME = 'foo';
+    test('create/get sender  and receiver/listener (foo)', async () => {
+      const LISTEN_QUEUE_NAME = 'foo'
 
-      // create the channel 'foo'
-      const sendChannelFunc = app.rabbitmq.createChannel({
-        name: SEND_QUEUE_NAME,
-        json: true,
-        setup: function(channel: Channel) {
-          return channel.assertQueue(SEND_QUEUE_NAME, {durable: true});
-        }
-      });
+      const dfd = createDeferred<void>()
 
-      // get the channel
-      const sendChannel = app.rabbitmq.findChannel(SEND_QUEUE_NAME)
+      await app.rabbitmq.queueDelete(LISTEN_QUEUE_NAME)
 
-      expect(sendChannel).toBe(sendChannelFunc)
+      sub = app.rabbitmq.createConsumer({
+        queue: LISTEN_QUEUE_NAME,
+        queueOptions: {durable: true},
+        qos: {prefetchCount: 2}
+      }, async (msg: any) => {
+        expect(msg.body.id).toBe(1);
+        expect(msg.body.name).toBe('Alan Turing');
+        dfd.resolve();
+      })
 
-      await sendChannel?.sendToQueue('bar', {time: DATE})
+      await sleep(1)
+
+      await expectEvent(sub, 'ready')
+
+      pub = app.rabbitmq.createPublisher({
+        confirm: true,
+        maxAttempts: 1
+      })
+
+      await pub.send(LISTEN_QUEUE_NAME, {id: 1, name: 'Alan Turing'})
+
+      await dfd.promise
+
+    })
+
+    test('rpc', async () => {
+
+      const LISTEN_RPC_NAME = 'fooRPC'
+
+      await app.rabbitmq.queueDelete(LISTEN_RPC_NAME)
+
+      sub = app.rabbitmq.createConsumer({
+        queue: LISTEN_RPC_NAME
+      }, async (_req: any, reply: any) => {
+        await reply('pong');
+      })
+
+      await sleep(1)
+
+      await expectEvent(sub, 'ready')
+
+      pub = app.rabbitmq.createRPCClient({confirm: true})
+
+      const res = await pub.send(LISTEN_RPC_NAME, 'ping')
+
+      expect(res.body).toBe('pong')
 
     })
 
   })
 
+  describe('namespace', () => {
 
+    let app: FastifyInstance
+    // @ts-ignore
+    let sub: Consumer
+    // @ts-ignore
+    let pub: Publisher | RPCClient
+
+    beforeEach(async () => {
+
+      app = fastify()
+
+      await app.register(fastifyRabbit, {
+        connection: 'amqp://guest:guest@localhost',
+        namespace: 'unittest'
+      })
+
+      await app.listen()
+
+      await app.ready()
+
+    })
+
+    afterEach(async () => {
+
+      await pub.close()
+
+      await sub.close()
+
+      await app.rabbitmq.unittest.close()
+
+      await app.close()
+    })
+
+    test('create/get sender and receiver/listener (bar)', async () => {
+      const LISTEN_QUEUE_NAME = 'bar'
+
+      const dfd = createDeferred<void>()
+
+      await app.rabbitmq.unittest.queueDelete(LISTEN_QUEUE_NAME)
+
+      sub = app.rabbitmq.unittest.createConsumer({
+        queue: LISTEN_QUEUE_NAME,
+        queueOptions: {durable: true},
+        qos: {prefetchCount: 2}
+      }, async (msg: any) => {
+        expect(msg.body.id).toBe(1);
+        expect(msg.body.name).toBe('Alan Turing');
+        dfd.resolve();
+      })
+
+      await sleep(1)
+
+      await expectEvent(sub, 'ready')
+
+      pub = app.rabbitmq.unittest.createPublisher({
+        confirm: true,
+        maxAttempts: 1
+      })
+
+      await pub.send(LISTEN_QUEUE_NAME, {id: 1, name: 'Alan Turing'})
+
+      await dfd.promise
+
+    })
+
+    test('rpc', async () => {
+
+      const LISTEN_RPC_NAME = 'fooRPC'
+
+      await app.rabbitmq.unittest.queueDelete(LISTEN_RPC_NAME)
+
+      sub = app.rabbitmq.unittest.createConsumer({
+        queue: LISTEN_RPC_NAME
+      }, async (_req: any, reply: any) => {
+        await reply('pong');
+      })
+
+      await sleep(1)
+
+      await expectEvent(sub, 'ready')
+
+      pub = app.rabbitmq.unittest.createRPCClient({confirm: true})
+
+      const res = await pub.send(LISTEN_RPC_NAME, 'ping')
+
+      expect(res.body).toBe('pong')
+
+    })
+
+  })
 
 })
