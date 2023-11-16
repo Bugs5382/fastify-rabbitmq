@@ -27,6 +27,7 @@
     "test:ci": "jest --ci",
     "test:coverage": "jest --coverage",
     "typedoc": "typedoc",
+    "typedoc:watch": "typedoc -watch",
     "update": "npx npm-check-updates -u && npm install && npm run test"
   },
   "repository": {

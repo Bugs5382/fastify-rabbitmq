@@ -37,6 +37,24 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
   }
 }
 
+/**
+ * Main Function
+ * @since 1.0.0
+ * @example
+ * This is the basics on how to use this plugin:
+ * ```js
+ * app.register(fastifyRabbit, {
+ *  connection: 'amqp://guest:guest@localhost'
+ * })
+ * ```
+ * This will allow you to read from your Fastify "object" and
+ * use this plugin at the "rabbitmq" level. From there you can execute and maintain
+ * the RabbitMQ Connection using the 'rabbitmq-client' package, which is wrapping around
+ * this plugin to execute functions it provides.
+ *
+ * @see [https://cody-greene.github.io/node-rabbitmq-client/latest/index.html](https://cody-greene.github.io/node-rabbitmq-client/latest/index.html)
+ *
+ */
 const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, opts, done) => {
   await validateOpts(opts)
 
