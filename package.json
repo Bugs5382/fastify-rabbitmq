@@ -23,7 +23,7 @@
     "lint": "ts-standard --parser @typescript-eslint/parser | snazzy",
     "lint:fix": "ts-standard --fix --parser @typescript-eslint/parser | snazzy",
     "pack": "npm run clean && npm run test:ci && npm run build && npm pack",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run clean && npm run build",
     "test": "jest",
     "test:ci": "jest --ci",
     "test:coverage": "jest --coverage",
