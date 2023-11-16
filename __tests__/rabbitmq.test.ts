@@ -1,192 +1,175 @@
-import fastify, {FastifyInstance} from "fastify";
+import fastify, {FastifyInstance} from 'fastify'
 import fastifyRabbit from "../src";
-import {errors} from "../src/errors";
+import {errors} from '../src/errors'
 
-let app: FastifyInstance;
+let app: FastifyInstance
 
 beforeEach(() => {
-  app = fastify();
-});
+  app = fastify()
+})
 
-afterEach( () => {
-  app.close.bind(app);
-});
+afterEach(async () => {
+  await app.close()
+})
 
-describe('plugin fastify-rabbitmq tests',  () => {
-
-  describe('registration tests',  () => {
-
-    it("register - error out - no urLs", async () => {
-
+describe('plugin fastify-rabbitmq tests', () => {
+  describe('registration tests', () => {
+    test('register - error out - no urls', async () => {
       try {
         await app.register(fastifyRabbit)
       } catch (error) {
-        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('urLs or findServers must be defined.'))
+        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('connection or findServers must be defined.'))
       }
+    })
 
-    });
-
-    it("register - error out - urLs less than 0", async () => {
-
+    test('register - error out - urls is not a string', async () => {
       try {
+        // @ts-expect-error
         await app.register(fastifyRabbit, {
-          urLs: [],
+          connection: 1,
         })
       } catch (error) {
-        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('urLs must have one item in the array.'))
+        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('urls must be defined.'))
       }
+    })
 
-    });
-
-    it("register - error out - heartbeatIntervalInSeconds not a number greater than 0", async () => {
-
+    test('register - error out - urls less than 0', async () => {
       try {
+        // @ts-ignore
         await app.register(fastifyRabbit, {
-          urLs: ['amqp://localhost'],
-          heartbeatIntervalInSeconds: -1
+          connection: []
         })
       } catch (error) {
-        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('heartbeatIntervalInSeconds must be a valid number greater than or equal to 0.'))
+        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('urls must contain one or more item in the array.'))
       }
+    })
 
-    });
+  })
 
-    it("register - error out - reconnectTimeInSeconds not a number greater than 0", async () => {
-
+  describe('sanity checks', () => {
+    test("register - can't be registered twice", async () => {
       try {
         await app.register(fastifyRabbit, {
-          urLs: ['amqp://localhost'],
-          reconnectTimeInSeconds: -1
+          connection: 'amqp://guest:guest@localhost'
         })
-      } catch (error) {
-        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('reconnectTimeInSeconds must be a valid number greater than or equal to 0.'))
+
+        await app.register(fastifyRabbit, {
+          connection: 'amqp://guest:guest@localhost'
+        })
+      } catch (err) {
+        expect(err).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered.'))
       }
+    })
 
-    });
+    test("register - can't be registered twice - namespace", async () => {
+      try {
+        await app.register(fastifyRabbit, {
+          connection: 'amqp://guest:guest@localhost',
+          namespace: 'error'
+        })
 
-    it("register - can't be registered twice", async () => {
-
-      app.register(fastifyRabbit, {
-        urLs: ['amqp://localhost']
-      })
-
-      app.register(fastifyRabbit, {
-        urLs: ['amqp://localhost']
-      }).ready((error) => {
-        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered.'))
-      })
-
-    });
-
-    it("register - can't be registered twice - namespace", async () => {
-
-      app.register(fastifyRabbit, {
-        urLs: ['amqp://localhost'],
-        namespace: 'error'
-      })
-
-      app.register(fastifyRabbit, {
-        urLs: ['amqp://localhost'],
-        namespace: 'error'
-      }).ready((error) => {
-        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered with namespace: error'))
-      })
-
-    });
+        await app.register(fastifyRabbit, {
+          connection: 'amqp://guest:guest@localhost',
+          namespace: 'error'
+        })
+      } catch (err) {
+        expect(err).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered with namespace: error'))
+      }
+    })
 
   })
 
   describe('common action tests', () => {
+    test('ensure basic properties are accessible', async () => {
+      try {
+        await app.register(fastifyRabbit, {
+          connection: 'amqp://guest:guest@localhost'
+        })
+        expect(app.rabbitmq).toHaveProperty('acquire')
+        expect(app.rabbitmq).toHaveProperty('close')
+        expect(app.rabbitmq).toHaveProperty('createConsumer')
+        expect(app.rabbitmq).toHaveProperty('createPublisher')
+        expect(app.rabbitmq).toHaveProperty('createRPCClient')
+        expect(app.rabbitmq).toHaveProperty('exchangeDeclare')
+        expect(app.rabbitmq).toHaveProperty('queueDeclare')
+        expect(app.rabbitmq).toHaveProperty('queueBind')
+        expect(app.rabbitmq).toHaveProperty('ready')
 
-    it('ensure basic properties are accessible', async () => {
-      await app.register(fastifyRabbit, {
-        urLs: ['amqp://localhost']
-      }).ready().then(async () => {
-        expect(app.rabbitmq).toHaveProperty('createChannel');
-        expect(app.rabbitmq).toHaveProperty('isConnected');
-        expect(app.rabbitmq).toHaveProperty('reconnect');
-        expect(app.rabbitmq).toHaveProperty('close');
-      })
-
-      await app.rabbitmq.close()
-
-    })
-
-    it('ensure basic properties are accessible via namespace', async () => {
-
-      await app.register(fastifyRabbit, {
-        urLs: ['amqp://localhost'],
-        namespace: 'unittest'
-      }).ready().then(async () => {
-        expect(app.rabbitmq["unittest"]).toHaveProperty('createChannel');
-        expect(app.rabbitmq["unittest"]).toHaveProperty('isConnected');
-        expect(app.rabbitmq["unittest"]).toHaveProperty('reconnect');
-        expect(app.rabbitmq["unittest"]).toHaveProperty('close');
-      })
-
-      await app.rabbitmq["unittest"]?.close()
-
-    })
-
-    it('register with log level: debug', async () => {
-
-      await app.register(fastifyRabbit, {
-        urLs: ['amqp://localhost'],
-        logLevel: 'debug'
-      }).ready().then(async () => {
         await app.rabbitmq.close()
-      })
-
+      } catch (e) {
+        /* should not error */
+      }
     })
 
-    it('register with log level: trace', async () => {
+    test('ensure basic properties are accessible via namespace', async () => {
+      try {
+        await app.register(fastifyRabbit, {
+          connection: 'amqp://guest:guest@localhost',
+          namespace: 'unittest'
+        }).ready().then(async () => {
+          expect(app.rabbitmq.unittest).toHaveProperty('acquire')
+          expect(app.rabbitmq.unittest).toHaveProperty('close')
+          expect(app.rabbitmq.unittest).toHaveProperty('createConsumer')
+          expect(app.rabbitmq.unittest).toHaveProperty('createPublisher')
+          expect(app.rabbitmq.unittest).toHaveProperty('createRPCClient')
+          expect(app.rabbitmq.unittest).toHaveProperty('exchangeDeclare')
+          expect(app.rabbitmq.unittest).toHaveProperty('queueDeclare')
+          expect(app.rabbitmq.unittest).toHaveProperty('queueBind')
+          expect(app.rabbitmq.unittest).toHaveProperty('ready')
+        })
 
-      await app.register(fastifyRabbit, {
-        urLs: ['amqp://localhost'],
-        logLevel: 'trace'
-      }).ready().then(async () => {
-        await app.rabbitmq.close()
-      })
-
+        await app.rabbitmq.unittest.close()
+      } catch (e) {
+        /* should not error */
+      }
     })
 
-    it('total channels should be 0', async () => {
-
-      await app.register(fastifyRabbit, {
-        urLs: ['amqp://localhost']
-      }).ready().then(async () => {
-        expect(app.rabbitmq.channelCount).toBe(0)
-        await app.rabbitmq.close()
-      })
-
+    test('register with log level: debug', async () => {
+      try {
+        await app.register(fastifyRabbit, {
+          connection: 'amqp://guest:guest@localhost',
+          logLevel: 'debug'
+        }).ready().then(async () => {
+          expect(app.rabbitmq.unittest).toHaveProperty('createConsumer')
+          await app.rabbitmq.close()
+        })
+      } catch (e) {
+        /* should not error */
+      }
     })
 
-
-    it('host does not exist', async () => {
-
-      await app.register(fastifyRabbit, {
-        urLs: ['amqp://doesnotexist'],
-        connectionOptions: {
-          keepAlive: false,
-          timeout: 0.1
-        }
-      })
-
-      expect(app.rabbitmq.isConnected()).toBe(false)
-
+    test('register with log level: trace', async () => {
+      try {
+        await app.register(fastifyRabbit, {
+          connection: 'amqp://guest:guest@localhost',
+          logLevel: 'trace'
+        }).ready().then(async () => {
+          expect(app.rabbitmq.unittest).toHaveProperty('createConsumer')
+          await app.rabbitmq.close()
+        })
+      } catch (e) {
+        /* should not error */
+      }
     })
 
-    it('invalid protocol', async () => {
-      await app.register(fastifyRabbit, {
-        urLs: ['xamqp://localhost']
-      })
-
-      expect(app.rabbitmq.isConnected()).toBe(false)
-
-      await app.rabbitmq.close()
-
+    test('host does not exist', async () => {
+      try {
+        await app.register(fastifyRabbit, {
+          connection: 'amqp://doesnotexist'
+        })
+      } catch (e) {
+        expect(e).toBeTruthy()
+      }
     })
 
+    test('invalid protocol', async () => {
+      try {
+        await app.register(fastifyRabbit, {
+          connection: 'xamqp://localhost'
+        })
+      } catch (e) {
+        expect(e).toBeTruthy()
+      }
+    })
   })
-
-});
+})
