@@ -47,6 +47,7 @@ export default fp<FastifyRabbitMQOptions>((fastify, options, done) => {
   
 });
 ```
+### Quick Setup on the Client Side
 
 Within any "endpoint" function, or if you have access to ```fastify.rabbitmq``` you can then call:
 
@@ -62,8 +63,6 @@ fastify.get('/rabbitmq', async (request, reply) => {
 ```
 
 Sending the string ```bar``` to the queue called ```foo```.
-
-### Quick Setup on the Client Side
 
 ## Full Documentation
 
