@@ -2,8 +2,6 @@ name: GitHub CI
 on:
   push:
     branches: [ main ]
-    tags:
-      - '*'
   pull_request:
 
 jobs:
@@ -27,6 +25,10 @@ jobs:
         run: npm install --ignore-scripts
       - name: Run Unit Tests
         run: npm run test:ci
+      - name: Release Drafter
+        uses: release-drafter/release-drafter@v5.9.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   Release:
     # Only release on push to main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -40,8 +42,8 @@ jobs:
         with:
           node-version: 'lts/*'
       - run: npm install
-      - name: semantic-release
+      - name: Semantic Release
         run: npm run semantic-release
         env:
-          GITLAB_TOKEN: $CI_JOB_TOKEN
+          GITLAB_TOKEN:  ${{ secrets.GITLAB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
