@@ -25,15 +25,9 @@ jobs:
         run: npm install --ignore-scripts
       - name: Run Unit Tests
         run: npm run test:ci
-      - name: Release Drafter
-        uses: release-drafter/release-drafter@v5.9.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   Release:
-    # Only release on push to main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    # Waits for test jobs for each Node.js version to complete
     needs: [ test ]
     steps:
       - uses: actions/checkout@v3
