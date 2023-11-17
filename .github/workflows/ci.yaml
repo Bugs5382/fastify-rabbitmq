@@ -39,5 +39,5 @@ jobs:
       - name: Semantic Release
         run: npm run semantic-release
         env:
-          GITLAB_TOKEN:  ${{ secrets.GITLAB_TOKEN }}
+          GITHUB_TOKEN:  ${{ secrets.GH_SECRET }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
