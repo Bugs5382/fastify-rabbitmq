@@ -1,5 +1,5 @@
 {
-  "entryPoints": ["./src/**"],
+  "entryPoints": ["./src/index.ts"],
   "githubPages": false,
   "includeVersion": false,
   "out": "docs",
