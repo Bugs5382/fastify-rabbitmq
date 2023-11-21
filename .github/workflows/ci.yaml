@@ -35,7 +35,7 @@ jobs:
   Release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    needs: [ Test ]
+    needs: [ test ]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -48,5 +48,5 @@ jobs:
       - name: Semantic Release
         run: npm run semantic-release
         env:
-          GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
