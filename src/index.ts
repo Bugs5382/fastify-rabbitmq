@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import fp from 'fastify-plugin'
-import {ConnectionOptions, Connection as RabbitMQConnection } from 'rabbitmq-client'
+import { ConnectionOptions, Connection as RabbitMQConnection } from 'rabbitmq-client'
 import { FastifyRabbitMQOptions } from './decorate.js'
 import { errors } from './errors.js'
 import { validateOpts } from './validation.js'
