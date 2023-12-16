@@ -22,6 +22,15 @@ describe('plugin fastify-rabbitmq tests', () => {
       }
     })
 
+    test('register - error out - connection not defined', async () => {
+      try {
+        // @ts-expect-error
+        await app.register(fastifyRabbit, { connection: undefined})
+      } catch (error) {
+        expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('connection or findServers must be defined.'))
+      }
+    })
+
     test('register - error out - urls is not a string', async () => {
       try {
         // @ts-expect-error
