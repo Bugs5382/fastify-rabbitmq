@@ -1,11 +1,16 @@
 # Folders
 .github
 .idea
+bin
+docs
 src
 __tests__
 coverage
 
 # Files
 jest.config.ts
+release.config.js
+.eslintignore
 *.json
+*.tgz
 *.yml
