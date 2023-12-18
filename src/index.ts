@@ -55,7 +55,7 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
  * @see [https://cody-greene.github.io/node-rabbitmq-client/latest/index.html](https://cody-greene.github.io/node-rabbitmq-client/latest/index.html)
  *
  */
-const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, opts, done) => {
+const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, opts) => {
   await validateOpts(opts)
 
   const { connection } = opts
@@ -63,8 +63,6 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, opts, done) => 
   const c = new RabbitMQConnection(connection)
 
   decorateFastifyInstance(fastify, opts, c)
-
-  done()
 })
 
 export default fastifyRabbit
