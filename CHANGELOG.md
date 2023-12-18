@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/Bugs5382/fastify-rabbitmq/compare/v1.2.0...v1.3.0) (2023-12-18)
+
+
+### Features
+
+* fastify v5 prep fixes ([f2bbc61](https://github.com/Bugs5382/fastify-rabbitmq/commit/f2bbc6185b5ff76089ec6448f8a847183c2f368e))
+
 # 1.0.0 (2023-11-17)
 
 
