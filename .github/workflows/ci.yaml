@@ -35,6 +35,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
   Release:
     runs-on: ubuntu-latest
+    services:
+      rabbitmq:
+        image: rabbitmq:3-alpine
+        ports:
+          - 5672:5672
     needs: [ test ]
     steps:
       - uses: actions/checkout@v3
