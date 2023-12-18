@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/Bugs5382/fastify-rabbitmq/compare/v1.3.0...v1.3.1) (2023-12-18)
+
+
+### Bug Fixes
+
+* url wrong ([f5cf4a7](https://github.com/Bugs5382/fastify-rabbitmq/commit/f5cf4a7f3ca5ceddc6ef8fa7b0d0b9148892e65c))
+
 # [1.3.0](https://github.com/Bugs5382/fastify-rabbitmq/compare/v1.2.0...v1.3.0) (2023-12-18)
 
 
