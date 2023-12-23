@@ -25,10 +25,7 @@
 ### Bug Fixes
 
 * fix ci for release ([5f6982a](https://github.com/Bugs5382/fastify-rabbitmq/commit/5f6982a5676341063260e9243b4c6c4ea0810b56))
-
-
-* 19 build in rpc clientserver (#20) ([fc03bd1](https://github.com/Bugs5382/fastify-rabbitmq/commit/fc03bd1fa8ee0932043e778135f712530b28ac9b)), closes [#20](https://github.com/Bugs5382/fastify-rabbitmq/issues/20) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19) [#19](https://github.com/Bugs5382/fastify-rabbitmq/issues/19)
-
+* 19 build in rpc clientserver (#20) ([fc03bd1](https://github.com/Bugs5382/fastify-rabbitmq/commit/fc03bd1fa8ee0932043e778135f712530b28ac9b)), closes [#20](https://github.com/Bugs5382/fastify-rabbitmq/issues/20)
 
 ### Features
 
@@ -40,11 +37,6 @@
 * npm install works ([bd7fac3](https://github.com/Bugs5382/fastify-rabbitmq/commit/bd7fac3471faff6525a666ba728d2debb504a181))
 * set to version 0.0.0 for now ([a330c71](https://github.com/Bugs5382/fastify-rabbitmq/commit/a330c71773d3b89aacb2d8b19528679ce2ec9484))
 * updated main methods ([a05a897](https://github.com/Bugs5382/fastify-rabbitmq/commit/a05a8973d202a09300d34607c70938573fdf0eb3))
-
-
-### BREAKING CHANGES
-
 * dropped node-amqp-connection-manager support
-
 * feature: typedoc generation added
 * new style
