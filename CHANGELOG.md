@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/Bugs5382/fastify-rabbitmq/compare/v1.3.1...v1.4.0) (2023-12-23)
+
+
+### Features
+
+* moved files from dist to lib ([91dd409](https://github.com/Bugs5382/fastify-rabbitmq/commit/91dd40950d59b8f4f4b1aa5cae4206b17f69571a))
+
 ## [1.3.1](https://github.com/Bugs5382/fastify-rabbitmq/compare/v1.3.0...v1.3.1) (2023-12-18)
 
 
