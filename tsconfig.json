@@ -8,7 +8,7 @@
     "allowJs": false,
     "declaration": true,
     "sourceMap": true,
-    "outDir": "./dist/esm",
+    "outDir": "./lib/esm",
     "stripInternal": true,
     "strict": true,
     "noImplicitAny": true,
