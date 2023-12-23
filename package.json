@@ -2,25 +2,28 @@
   "name": "fastify-rabbitmq",
   "version": "1.3.1",
   "description": "A Fastify RabbitMQ Plugin Developed in Pure TypeScript.",
-  "module": "./dist/esm/index.js",
-  "main": "./dist/cjs/index.js",
-  "types": "./dist/types/index.d.ts",
+  "module": "./lib/esm/index.js",
+  "main": "./lib/cjs/index.js",
+  "types": "./lib/types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
-      "default": "./dist/cjs/index.js"
+      "types": "./lib/types/index.d.ts",
+      "import": "./lib/esm/index.js",
+      "require": "./lib/cjs/index.js",
+      "default": "./lib/cjs/index.js"
     }
   },
+  "files": [
+    "lib/**/**"
+  ],
   "scripts": {
-    "clean": "rm -rf dist coverage",
+    "clean": "rm -rf lib coverage",
     "build": "tsc && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json && ./bin/build-types.sh",
     "build:watch": "tsc -w",
-    "lint": "ts-standard --parser @typescript-eslint/parser | snazzy",
-    "lint:fix": "ts-standard --fix --parser @typescript-eslint/parser | snazzy",
+    "lint": "ts-standard | snazzy",
+    "lint:fix": "ts-standard | snazzy",
     "pack": "npm pack",
-    "prepublishOnly": "npm run clean && npm run test:ci && npm run build && npm run pack",
+    "prepublishOnly": "npm run clean && npm run build && npm run test:ci && npm run pack",
     "test": "jest",
     "test:open": "jest --detectOpenHandles",
     "test:ci": "jest --ci",

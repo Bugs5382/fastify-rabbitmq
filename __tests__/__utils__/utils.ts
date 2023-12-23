@@ -1,5 +1,4 @@
 /* istanbul ignore next */
-
 import EventEmitter from "node:events";
 
 export function sleep(ms: number) {
