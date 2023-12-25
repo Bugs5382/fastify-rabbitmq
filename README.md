@@ -5,19 +5,22 @@ It uses the [rabbitmq-client](https://github.com/cody-greene/node-rabbitmq-clien
 
 The build exports this to valid ESM and CJS for ease of cross-compatibility.
 
+If you are using this NPM package, please consider giving it a :star: star.
+This will increase its visibility and solicit more contribution from the outside.
+
 ## Table of Contents
 
 1. [Install](#install)
 2. [Basic Usage](#basic-usage)
 3. [Full Documentation](#full-documentation)
-   1) [Options](#options)
+   1. [Options](#options)
 4. [Acknowledgements](#acknowledgements)
 5. [License](#license)
 
 ## Install
 
-```markdown
-npm i fastify-rabbitmq
+```
+npm install fastify-rabbitmq
 ```
 
 ## Basic Usage
