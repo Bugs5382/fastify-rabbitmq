@@ -1,18 +1,16 @@
 name: GitHub CI
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches: [ 'main', 'develop' ]
 
 jobs:
   Test:
     runs-on: ubuntu-latest
-    services:
-      rabbitmq:
-        image: rabbitmq:3-alpine
-        ports:
-          - 5672:5672
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
     strategy:
       matrix:
         node-version: [ 18.x, 20.x, 'lts/*' ]
@@ -28,19 +26,14 @@ jobs:
         run: npm install --ignore-scripts
       - name: Run Unit Tests
         run: npm run test:ci
-      - name: Release Drafter
-        uses: release-drafter/release-drafter@v5.9.0
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
   Release:
     runs-on: ubuntu-latest
-    services:
-      rabbitmq:
-        image: rabbitmq:3-alpine
-        ports:
-          - 5672:5672
-    needs: [ test ]
+    needs: [ 'Test' ]
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
     steps:
       - uses: actions/checkout@v3
         with:
@@ -50,7 +43,7 @@ jobs:
         with:
           node-version: 'lts/*'
       - name: NPM Install
-        run: npm install
+        run: npm install --ignore-scripts
       - name: Semantic Release (Dry Run)
         run: npm run semantic-release:dry-run
         env:
@@ -59,5 +52,5 @@ jobs:
       - name: Semantic Release
         run: npm run semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN:  ${{ secrets.GH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
