@@ -1,8 +1,8 @@
 /* istanbul ignore next */
-import EventEmitter from "node:events";
+import EventEmitter from 'node:events'
 
-export function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+export async function sleep (ms: number): Promise<any> {
+  return await new Promise(resolve => setTimeout(resolve, ms))
 }
 
 export interface Deferred<T=any> {
@@ -11,19 +11,19 @@ export interface Deferred<T=any> {
   promise: Promise<T>
 }
 
-export function createDeferred<T=any>(noUncaught?: boolean): Deferred<T> {
-  let dfd: any = {}
+export function createDeferred<T=any> (noUncaught?: boolean): Deferred<T> {
+  const dfd: any = {}
   dfd.promise = new Promise((resolve, reject) => {
     dfd.resolve = resolve
     dfd.reject = reject
   })
   /* istanbul ignore next */
-  if (noUncaught) {
+  if (noUncaught) { // eslint-disable-line
     dfd.promise.catch(() => {})
   }
   return dfd
 }
 
-export function expectEvent<T=any>(emitter: EventEmitter, name: string|symbol): Promise<T> {
-  return new Promise<T>((resolve) => { emitter.once(name, resolve) })
+export async function expectEvent<T=any> (emitter: EventEmitter, name: string | symbol): Promise<T> {
+  return await new Promise<T>((resolve) => { emitter.once(name, resolve) })
 }
