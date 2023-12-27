@@ -1,3 +1,17 @@
+# [1.5.0](https://github.com/Bugs5382/fastify-rabbitmq/compare/v1.4.0...v1.5.0) (2023-12-27)
+
+
+### Bug Fixes
+
+* forgot rabbitMQ ([39d325e](https://github.com/Bugs5382/fastify-rabbitmq/commit/39d325e4477fddad0e2106ec77a08903a1ef5a60))
+* forgot rabbitMQ ([#29](https://github.com/Bugs5382/fastify-rabbitmq/issues/29)) ([97bf62f](https://github.com/Bugs5382/fastify-rabbitmq/commit/97bf62f321ff375546e89c38827d0277288d3be3))
+
+
+### Features
+
+* standardized packages and scripts ([a508d19](https://github.com/Bugs5382/fastify-rabbitmq/commit/a508d19b8fca40258df854513eb9103fcf161aca))
+* standardized packages and scripts ([#28](https://github.com/Bugs5382/fastify-rabbitmq/issues/28)) ([82d80f0](https://github.com/Bugs5382/fastify-rabbitmq/commit/82d80f0042acd7cb08adc951fa23453287a8dd28))
+
 # [1.4.0](https://github.com/Bugs5382/fastify-rabbitmq/compare/v1.3.1...v1.4.0) (2023-12-23)
 
 
