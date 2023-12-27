@@ -1,6 +1,6 @@
-import fastify, {FastifyInstance} from 'fastify'
-import fastifyRabbit from "../src";
-import {errors} from '../src/errors'
+import fastify, { FastifyInstance } from 'fastify'
+import fastifyRabbit from '../src'
+import { errors } from '../src/errors'
 
 let app: FastifyInstance
 
@@ -25,7 +25,7 @@ describe('plugin fastify-rabbitmq tests', () => {
     test('register - error out - connection not defined', async () => {
       try {
         // @ts-expect-error
-        await app.register(fastifyRabbit, { connection: undefined})
+        await app.register(fastifyRabbit, { connection: undefined })
       } catch (error) {
         expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('connection or findServers must be defined.'))
       }
@@ -35,7 +35,7 @@ describe('plugin fastify-rabbitmq tests', () => {
       try {
         // @ts-expect-error
         await app.register(fastifyRabbit, {
-          connection: 1,
+          connection: 1
         })
       } catch (error) {
         expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('urls must be defined.'))
@@ -44,7 +44,7 @@ describe('plugin fastify-rabbitmq tests', () => {
 
     test('register - error out - urls less than 0', async () => {
       try {
-        // @ts-ignore
+        // @ts-expect-error
         await app.register(fastifyRabbit, {
           connection: []
         })
@@ -52,7 +52,6 @@ describe('plugin fastify-rabbitmq tests', () => {
         expect(error).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS('urls must contain one or more item in the array.'))
       }
     })
-
   })
 
   describe('sanity checks', () => {
@@ -85,7 +84,6 @@ describe('plugin fastify-rabbitmq tests', () => {
         expect(err).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered with namespace: error'))
       }
     })
-
   })
 
   describe('common action tests', () => {
