@@ -1,6 +1,6 @@
 {
   "name": "fastify-rabbitmq",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "A Fastify RabbitMQ Plugin Developed in Pure TypeScript.",
   "module": "./lib/esm/index.js",
   "main": "./lib/cjs/index.js",
