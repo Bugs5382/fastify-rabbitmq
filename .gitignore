@@ -133,6 +133,7 @@ docs
 
 # NPM
 package-lock.json
+.npmrc
 
 # Webstorm
 .idea
