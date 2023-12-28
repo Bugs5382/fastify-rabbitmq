@@ -1,3 +1,11 @@
+# [1.6.0](https://github.com/Bugs5382/fastify-rabbitmq/compare/v1.5.0...v1.6.0) (2023-12-28)
+
+
+### Features
+
+* updated rabbitmq-client 4.5.0 ([2cca2aa](https://github.com/Bugs5382/fastify-rabbitmq/commit/2cca2aaf43ec0a2bf5d8b1c402c48e4361aa6184))
+* updated rabbitmq-client 4.5.0 ([#30](https://github.com/Bugs5382/fastify-rabbitmq/issues/30)) ([574220e](https://github.com/Bugs5382/fastify-rabbitmq/commit/574220e3354239f7b6cbbc0415f8230991161429))
+
 # [1.5.0](https://github.com/Bugs5382/fastify-rabbitmq/compare/v1.4.0...v1.5.0) (2023-12-27)
 
 
