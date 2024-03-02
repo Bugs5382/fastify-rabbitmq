@@ -1,4 +1,5 @@
 import fastify, { FastifyInstance } from 'fastify'
+import { describe, expect, test, beforeEach, afterEach } from 'vitest';
 import fastifyRabbit from '../src'
 import { errors } from '../src/errors'
 
