@@ -27,7 +27,6 @@
     "lint": "npmPkgJsonLint . && ts-standard | snazzy",
     "lint:fix": "npmPkgJsonLint . && ts-standard --fix | snazzy",
     "pack": "npm pack",
-    "publish": "clean-publish",
     "prepublishOnly": "npm run clean && npm run build && npm run pack",
     "test": "vitest run",
     "test:verbose": "vitest run --reporter verbose",
