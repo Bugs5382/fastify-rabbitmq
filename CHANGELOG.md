@@ -1,3 +1,20 @@
+# [2.0.0](https://github.com/Bugs5382/fastify-rabbitmq/compare/v1.6.0...v2.0.0) (2024-03-02)
+
+
+### Features
+
+* [#35](https://github.com/Bugs5382/fastify-rabbitmq/issues/35) feat change to vitest from jest ([#37](https://github.com/Bugs5382/fastify-rabbitmq/issues/37)) ([221dec7](https://github.com/Bugs5382/fastify-rabbitmq/commit/221dec764fd64d8d0ab762fb5763e08a98600169))
+* remove clean package npm ([20af2e9](https://github.com/Bugs5382/fastify-rabbitmq/commit/20af2e9695abd8189bea2de5d213cfe0d3826fa1))
+* removed extra debug message ([a58a4d7](https://github.com/Bugs5382/fastify-rabbitmq/commit/a58a4d763a5a578aa792561c0c3723d709b55994))
+* removed extra debug message ([#36](https://github.com/Bugs5382/fastify-rabbitmq/issues/36)) ([be20162](https://github.com/Bugs5382/fastify-rabbitmq/commit/be20162eef7fdb899c17164a4af48543dc80915c))
+* update packages for vitest / node 20 ([edb3c73](https://github.com/Bugs5382/fastify-rabbitmq/commit/edb3c73eee325647a8169ae3148e93a14f532808))
+* updated unit testing to vitest ([393f84d](https://github.com/Bugs5382/fastify-rabbitmq/commit/393f84d7bc4cf334077ab68f34a46057680da858))
+
+
+### BREAKING CHANGES
+
+* - node 20
+
 # [1.6.0](https://github.com/Bugs5382/fastify-rabbitmq/compare/v1.5.0...v1.6.0) (2023-12-28)
 
 
