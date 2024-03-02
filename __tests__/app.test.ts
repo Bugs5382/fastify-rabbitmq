@@ -1,5 +1,6 @@
 import fastify, { FastifyInstance } from 'fastify'
 import { Consumer, Publisher, RPCClient } from 'rabbitmq-client'
+import { describe, expect, test, beforeEach, afterEach } from 'vitest'
 import fastifyRabbit from '../src'
 import { createDeferred, expectEvent, sleep } from './__utils__/utils'
 
