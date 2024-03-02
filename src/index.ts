@@ -11,8 +11,8 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
     namespace = ''
   } = options
 
-  if (typeof namespace !== 'undefined') {
-    fastify.log.debug('[fastify-rabbitmq] Namespace: %s', namespace)
+  if (typeof namespace !== 'undefined' && namespace !== '') {
+    fastify.log.debug('[fastify-rabbitmq] Namespace Attempt: %s', namespace)
   }
   if (typeof namespace !== 'undefined' && namespace !== '') {
     if (typeof fastify.rabbitmq === 'undefined') {
