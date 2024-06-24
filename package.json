@@ -57,7 +57,7 @@
   },
   "homepage": "https://github.com/Bugs5382/fastify-rabbitmq#readme",
   "dependencies": {
-    "@fastify/error": "^3.4.1",
+    "@fastify/error": "^4.0.0",
     "fastify-plugin": "^4.5.1",
     "rabbitmq-client": "^4.5.1"
   },
