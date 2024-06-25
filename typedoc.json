@@ -1,7 +1,8 @@
 {
+  "tsconfig": "src/tsconfig.esm.json",
   "entryPoints": ["./src/index.ts"],
   "githubPages": false,
-  "includeVersion": false,
+  "includeVersion": true,
   "out": "docs",
   "name": "Fastify RabbitMQ",
   "sidebarLinks": {
