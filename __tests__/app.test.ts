@@ -4,6 +4,8 @@ import { describe, expect, test, beforeEach, afterEach } from 'vitest'
 import fastifyRabbit from '../src'
 import { createDeferred, expectEvent, sleep } from './__utils__/utils'
 
+const RABBITMQ_URL = process.env.RABBITMQ_URL || `amqp://guest:guest@localhost`
+
 describe('fastify-rabbitmq sample app tests', () => {
   describe('no namespace', () => {
     let app: FastifyInstance
@@ -14,7 +16,7 @@ describe('fastify-rabbitmq sample app tests', () => {
       app = fastify()
 
       await app.register(fastifyRabbit, {
-        connection: 'amqp://guest:guest@localhost'
+        connection: RABBITMQ_URL
       })
 
       await app.listen()
@@ -95,7 +97,7 @@ describe('fastify-rabbitmq sample app tests', () => {
       app = fastify()
 
       await app.register(fastifyRabbit, {
-        connection: 'amqp://guest:guest@localhost',
+        connection: RABBITMQ_URL,
         namespace: 'unittest'
       })
 
