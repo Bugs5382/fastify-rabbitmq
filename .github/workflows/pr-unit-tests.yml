@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       rabbitmq:
-        image: rabbitmq:3-alpine
+        image: rabbitmq:3.13.3-alpine
         ports:
           - 5672:5672
     strategy:
@@ -34,6 +34,8 @@ jobs:
         run: npm run lint:fix
       - name: Run Unit Tests
         run: npm run test
+        env:
+          RABBITMQ_URL: amqp://guest:guest@localhost:5672
       - name: Check test results
         run: exit ${{ steps.Test.outputs.test_result }}
         id: check_test_result
