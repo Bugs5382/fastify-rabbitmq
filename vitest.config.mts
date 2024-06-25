@@ -5,7 +5,6 @@ export default defineConfig({
     coverage: {
       exclude: [
         '__tests__/__utils__/**',
-        '__tests__/__data__/**',
         'bin',
         'docs',
         'lib',

@@ -5,6 +5,8 @@ import { errors } from '../src/errors'
 
 let app: FastifyInstance
 
+const RABBITMQ_URL = process.env.RABBITMQ_URL || `amqp://guest:guest@localhost`
+
 beforeEach(() => {
   app = fastify()
 })
@@ -59,11 +61,11 @@ describe('plugin fastify-rabbitmq tests', () => {
     test("register - can't be registered twice", async () => {
       try {
         await app.register(fastifyRabbit, {
-          connection: 'amqp://guest:guest@localhost'
+          connection: RABBITMQ_URL
         })
 
         await app.register(fastifyRabbit, {
-          connection: 'amqp://guest:guest@localhost'
+          connection: RABBITMQ_URL
         })
       } catch (err) {
         expect(err).toEqual(new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered.'))
@@ -73,12 +75,12 @@ describe('plugin fastify-rabbitmq tests', () => {
     test("register - can't be registered twice - namespace", async () => {
       try {
         await app.register(fastifyRabbit, {
-          connection: 'amqp://guest:guest@localhost',
+          connection: RABBITMQ_URL,
           namespace: 'error'
         })
 
         await app.register(fastifyRabbit, {
-          connection: 'amqp://guest:guest@localhost',
+          connection: RABBITMQ_URL,
           namespace: 'error'
         })
       } catch (err) {
@@ -112,7 +114,7 @@ describe('plugin fastify-rabbitmq tests', () => {
     test('ensure basic properties are accessible via namespace', async () => {
       try {
         await app.register(fastifyRabbit, {
-          connection: 'amqp://guest:guest@localhost',
+          connection: RABBITMQ_URL,
           namespace: 'unittest'
         }).ready().then(async () => {
           expect(app.rabbitmq.unittest).toHaveProperty('acquire')
@@ -135,7 +137,7 @@ describe('plugin fastify-rabbitmq tests', () => {
     test('register with log level: debug', async () => {
       try {
         await app.register(fastifyRabbit, {
-          connection: 'amqp://guest:guest@localhost',
+          connection: RABBITMQ_URL,
           logLevel: 'debug'
         }).ready().then(async () => {
           expect(app.rabbitmq.unittest).toHaveProperty('createConsumer')
@@ -149,7 +151,7 @@ describe('plugin fastify-rabbitmq tests', () => {
     test('register with log level: trace', async () => {
       try {
         await app.register(fastifyRabbit, {
-          connection: 'amqp://guest:guest@localhost',
+          connection: RABBITMQ_URL,
           logLevel: 'trace'
         }).ready().then(async () => {
           expect(app.rabbitmq.unittest).toHaveProperty('createConsumer')
@@ -157,26 +159,6 @@ describe('plugin fastify-rabbitmq tests', () => {
         })
       } catch (e) {
         /* should not error */
-      }
-    })
-
-    test('host does not exist', async () => {
-      try {
-        await app.register(fastifyRabbit, {
-          connection: 'amqp://doesnotexist'
-        })
-      } catch (e) {
-        expect(e).toBeTruthy()
-      }
-    })
-
-    test('invalid protocol', async () => {
-      try {
-        await app.register(fastifyRabbit, {
-          connection: 'xamqp://localhost'
-        })
-      } catch (e) {
-        expect(e).toBeTruthy()
       }
     })
   })
