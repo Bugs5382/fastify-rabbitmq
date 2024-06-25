@@ -1,3 +1,16 @@
+# [2.1.0](https://github.com/Bugs5382/fastify-rabbitmq/compare/v2.0.0...v2.1.0) (2024-06-25)
+
+
+### Bug Fixes
+
+* add rabbitmq service ([5905e71](https://github.com/Bugs5382/fastify-rabbitmq/commit/5905e717465ce5263973147c796ecfe72ed55c6f))
+
+
+### Features
+
+* lots of updates ([e57d1b0](https://github.com/Bugs5382/fastify-rabbitmq/commit/e57d1b09e8cdfd66822bc727ef679dee1b7baf30))
+* lots of updates ([#44](https://github.com/Bugs5382/fastify-rabbitmq/issues/44)) ([79b4f4e](https://github.com/Bugs5382/fastify-rabbitmq/commit/79b4f4ea852aa1002515d2160a09b363b69bd7b0))
+
 # [2.0.0](https://github.com/Bugs5382/fastify-rabbitmq/compare/v1.6.0...v2.0.0) (2024-03-02)
 
 
