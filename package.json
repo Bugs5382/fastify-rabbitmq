@@ -70,7 +70,7 @@
     "@typescript-eslint/parser": "^7.14.1",
     "@vitest/coverage-v8": "^1.6.0",
     "@vitest/ui": "^1.6.0",
-    "fastify": "^4.28.0",
+    "fastify": "^5.0.0",
     "npm-check-updates": "^16.14.20",
     "npm-package-json-lint": "^8.0.0",
     "pre-commit": "^1.2.2",
