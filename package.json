@@ -59,7 +59,7 @@
   "dependencies": {
     "@fastify/error": "^4.0.0",
     "fastify-plugin": "^4.5.1",
-    "rabbitmq-client": "^4.6.0"
+    "rabbitmq-client": "^5.0.0"
   },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
