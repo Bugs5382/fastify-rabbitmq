@@ -59,8 +59,17 @@ jobs:
           name: cache
           path: |
             package.json
+            package-lock.json
             ./lib
             ./node_modules
+
+      - name: Build
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Semantic Release (Dry Run)
         run: npm run semantic-release:dry-run

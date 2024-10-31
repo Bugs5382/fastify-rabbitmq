@@ -43,5 +43,6 @@ jobs:
           name: cache
           path: |
             package.json
+            package-lock.json
             ./lib
             ./node_modules
