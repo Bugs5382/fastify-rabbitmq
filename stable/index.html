@@ -31,10 +31,10 @@ Make sure it is loaded before any <em><strong>routes</strong></em> are loaded.</
 </code><button type="button">Copy</button></pre>
 
 <a id="md:fastifyrabbitmqoptions" class="tsd-anchor"></a><h4 class="tsd-anchor-link">FastifyRabbitMQOptions<a href="#md:fastifyrabbitmqoptions" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h4><a id="md:connection" class="tsd-anchor"></a><h5 class="tsd-anchor-link"><code>connection</code><a href="#md:connection" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h5><p>Connection String or object pointing to the RabbitMQ Broker Services.
-This can be an object of <code>ConnectionOptions</code> from the <code>rabbitmq-client</code> plugin options.</p>
+This can be an object of <code>ConnectionOptions</code> from the <code>node-rabbitmq-client</code> plugin options.</p>
 <a id="md:namespace" class="tsd-anchor"></a><h5 class="tsd-anchor-link"><code>namespace</code><a href="#md:namespace" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h5><p>If you need more than one &quot;connection&quot; to a different set and/or array of RabbitMQ servers,
 either on network or cloud, each registration of the plugin needs it to be in its own namespace.
-If not provided, your application will fail to load.</p>
+If the name space is duplicated, it will fail to load.</p>
 <a id="md:acknowledgements" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Acknowledgements<a href="#md:acknowledgements" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><ul>
 <li><a href="https://www.npmjs.com/package/rabbitmq-client" target="_blank" class="external">node-rabbitmq-client</a></li>
 <li><a href="https://fastify.dev/" target="_blank" class="external">fastify</a></li>
