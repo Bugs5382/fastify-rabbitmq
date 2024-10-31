@@ -31,7 +31,8 @@ jobs:
       - name: Checkout src
         uses: actions/checkout@v4
 
-      - run: mkdir -p ./docs
+      - name: Create Directory
+        run: mkdir -p ./docs
 
       - name: Download the existing documents artifact
         uses: actions/download-artifact@v4
@@ -44,10 +45,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: npm
 
       - name: Install NPM
-        run: npm ci
+        run: npm install --ignore-scripts
 
       - name: Build Documents
         run: npm run typedoc
@@ -68,18 +68,22 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: gh-pages
+
       - name: Create Directory
         run: mkdir -p ./docs
+
       - name: Download the new documents artifact
         uses: actions/download-artifact@v4
         with:
           name: newdocumentation
+
       - name: Extract Tar
         run: tar -xf newdocumentation.tar ./docs -C ./docs
+
       - name: Commit
         run: |
           git config --global user.email "actions-user@users.noreply.github.com"
           git config --global user.name "GitHub Actions"
           git add .
-          git commit -m "Updated the docs"
+          git commit -m "Updated the Docs"
           git push
