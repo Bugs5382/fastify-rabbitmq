@@ -1,7 +1,7 @@
 # Fastify RabbitMQ
 
 A Fastify RabbitMQ Plugin Developed in Pure TypeScript.
-It uses the [rabbitmq-client](https://github.com/cody-greene/node-rabbitmq-client/) plugin as a wrapper.
+It uses the [node-rabbitmq-client](https://github.com/cody-greene/node-rabbitmq-client/) plugin as a wrapper.
 
 The build exports this to valid ESM and CJS for ease of cross-compatibility.
 
@@ -39,7 +39,7 @@ export default fp<FastifyRabbitMQOptions>((fastify, options, done) => {
 
    void fastify.ready().then(async () => {
 
-     const snowAssignAssetTag = fastify.rabbitmq.createConsumer({
+     const consumer = fastify.rabbitmq.createConsumer({
        queue: 'foo',
        queueOptions: {durable: true}
      }, async (msg: any) => {
@@ -96,7 +96,7 @@ If not provided, your application will fail to load.
 
 ## Acknowledgements
 
-- [rabbitmq-client](https://www.npmjs.com/package/rabbitmq-client)
+- [node-rabbitmq-client](https://www.npmjs.com/package/rabbitmq-client)
 - [fastify](https://fastify.dev/)
 - ... and my Wife and Baby Girl.
 
