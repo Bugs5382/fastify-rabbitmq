@@ -6,7 +6,7 @@ permissions:
   contents: write
 
 jobs:
-  Get_History:
+  History:
     runs-on: ubuntu-latest
     steps:
       - name: Get the gh-pages repo
@@ -25,7 +25,7 @@ jobs:
           name: documentation
           path: documentation.tar
   Build:
-    needs: Get_History
+    needs: History
     runs-on: ubuntu-latest
     steps:
       - name: Checkout src
