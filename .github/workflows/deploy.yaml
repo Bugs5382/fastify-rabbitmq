@@ -57,11 +57,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: cache
-          path: |
-            package.json
-            package-lock.json
-            ./lib
-            ./node_modules
+          path: ./
 
       - name: Build
         uses: actions/setup-node@v4
