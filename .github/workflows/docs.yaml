@@ -1,0 +1,85 @@
+name: Publish Docs
+on:
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: write
+
+jobs:
+  Get_History:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the gh-pages repo
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - name: TAR the existing docs
+        run: |
+          mkdir -p ./docs
+          tar -cvf documentation.tar ./docs
+
+      - name: Create a document artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: documentation.tar
+  Build:
+    needs: Get_History
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout src
+        uses: actions/checkout@v4
+
+      - run: mkdir -p ./docs
+
+      - name: Download the existing documents artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: documentation
+
+      - run: tar -xf documentation.tar ./docs -C ./docs
+
+      - name: Build
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install NPM
+        run: npm ci
+
+      - name: Build Documents
+        run: npm run typedoc
+
+      - name: Tar the new docs
+        run: tar -cvf newdocumentation.tar ./docs
+
+      - name: Create a new document artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: newdocumentation
+          path: newdocumentation.tar
+  Commit:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the gh-pages repo
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+      - name: Create Directory
+        run: mkdir -p ./docs
+      - name: Download the new documents artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: newdocumentation
+      - name: Extract Tar
+        run: tar -xf newdocumentation.tar ./docs -C ./docs
+      - name: Commit
+        run: |
+          git config --global user.email "actions-user@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
+          git add .
+          git commit -m "Updated the docs"
+          git push

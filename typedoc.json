@@ -3,6 +3,7 @@
   "entryPoints": ["./src/index.ts"],
   "githubPages": false,
   "includeVersion": true,
+  "plugin": ["@shipgirl/typedoc-plugin-versions"],
   "out": "docs",
   "name": "Fastify RabbitMQ",
   "sidebarLinks": {
