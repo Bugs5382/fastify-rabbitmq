@@ -4,10 +4,10 @@ on:
   workflow_call:
   pull_request:
     branches:
-      - '*'
-  push:
-    branches:
-      - '*'
+      - main
+    types:
+      - opened
+      - synchronize
 
 jobs:
   Build:
