@@ -40,5 +40,9 @@ jobs:
         if: matrix.node-version == 'lts/*'
         uses: actions/upload-artifact@v4
         with:
-          name: lib
-          path: ./lib
+          name: cache
+          path: |
+            package.json
+            package-lock.json
+            ./lib
+            ./node_modules
