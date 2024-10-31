@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   Test:
-    uses: ./.github/workflows/test.yml
+    uses: ./.github/workflows/test.yaml
   Release:
     needs: Test
     runs-on: ubuntu-latest
@@ -79,5 +79,5 @@ jobs:
 
   Document:
     needs: Release
-    uses: ./.github/workflows/docs.yml
+    uses: ./.github/workflows/docs.yaml
 
