@@ -62,9 +62,6 @@ jobs:
           name: lib
           path: ./lib
 
-      - name: Build Package
-        run: cat <<< $(jq 'del(.scripts.prepare)' ./lib/package.json) > ./lib/package.json
-
       - name: Semantic Release (Dry Run)
         run: npm run semantic-release:dry-run
         env:
