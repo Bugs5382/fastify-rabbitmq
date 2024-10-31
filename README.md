@@ -85,13 +85,13 @@ export interface FastifyRabbitMQOptions {
 ##### `connection`
 
 Connection String or object pointing to the RabbitMQ Broker Services.
-This can be an object of ```ConnectionOptions``` from the ```rabbitmq-client``` plugin options.
+This can be an object of ```ConnectionOptions``` from the ```node-rabbitmq-client``` plugin options.
 
 ##### `namespace`
 
 If you need more than one "connection" to a different set and/or array of RabbitMQ servers,
 either on network or cloud, each registration of the plugin needs it to be in its own namespace.
-If not provided, your application will fail to load.
+If the name space is duplicated, it will fail to load.
 
 
 ## Acknowledgements
