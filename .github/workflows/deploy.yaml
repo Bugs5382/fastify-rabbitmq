@@ -1,0 +1,83 @@
+name: Release and Publish
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  Test:
+    uses: ./.github/workflows/test.yml
+  Release:
+    needs: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Folder
+        run: mkdir -p ./lib
+
+      - name: Download the build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lib
+          path: ./lib
+
+      - name: Build Package
+        run: cat <<< $(jq 'del(.scripts.prepare)' ./lib/package.json) > ./lib/package.json
+
+      - name: Package the build artifact
+        run: npm pack ./lib
+
+      - name: Get Package Version
+        run: |
+          echo "RELEASE_NAME=$(npm info ./ version)" >> $GITHUB_ENV
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          tag_name: ${{ env.RELEASE_NAME }}
+          files: fastify-rabbitmq-versions-*.tgz
+
+  Publish:
+    needs: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Directory
+        run: mkdir -p ./lib
+
+      - name: Download the build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lib
+          path: ./lib
+
+      - name: Build Package
+        run: cat <<< $(jq 'del(.scripts.prepare)' ./lib/package.json) > ./lib/package.json
+
+      - name: Semantic Release (Dry Run)
+        run: npm run semantic-release:dry-run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Semantic Release
+        run: npm run semantic-release
+        env:
+          GITHUB_TOKEN:  ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  Document:
+    needs: Release
+    uses: ./.github/workflows/docs.yml
+
