@@ -30,6 +30,7 @@ jobs:
 
       - name: Run
         run: |
+          npm install --package-lock-only
           npm install --ignore-scripts
           npm run build
           npm run test
