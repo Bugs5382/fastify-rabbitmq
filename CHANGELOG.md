@@ -1,3 +1,16 @@
+# [3.0.0](https://github.com/Bugs5382/fastify-rabbitmq/compare/v2.1.0...v3.0.0) (2024-10-31)
+
+
+### Features
+
+* packages ([bdcbf51](https://github.com/Bugs5382/fastify-rabbitmq/commit/bdcbf511c5e9fab8557d94d57d912a0ec3dc29d1))
+* update packages ([#102](https://github.com/Bugs5382/fastify-rabbitmq/issues/102)) ([1bc9e99](https://github.com/Bugs5382/fastify-rabbitmq/commit/1bc9e998f3d8009e058b12bb863b978c0c5ccf11))
+
+
+### BREAKING CHANGES
+
+* Fastify 4.x dropped.
+
 # [2.1.0](https://github.com/Bugs5382/fastify-rabbitmq/compare/v2.0.0...v2.1.0) (2024-06-25)
 
 
