@@ -30,8 +30,8 @@ jobs:
           cache: npm
 
       - name: Run
-        run: |  
-          npm ci
+        run: |
+          npm install --ignore-scripts
           npm run build
           npm run test
         env:
