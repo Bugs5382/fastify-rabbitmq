@@ -78,6 +78,6 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   Document:
-    needs: Release
+    needs: Publish
     uses: ./.github/workflows/docs.yaml
 
