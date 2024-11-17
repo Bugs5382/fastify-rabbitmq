@@ -26,46 +26,46 @@ npm install fastify-rabbitmq
 ## Basic Usage
 
 Register this as a plugin.
-Make sure it is loaded before any ***routes*** are loaded.
+Make sure it is loaded before any **_routes_** are loaded.
 
 ### Quick Setup on the Server Side
 
 ```typescript
 export default fp<FastifyRabbitMQOptions>((fastify, options, done) => {
+  void fastify.register(fastifyRabbit, {
+    connection: `amqp://guest:guest@localhost`,
+  });
 
-   void fastify.register(fastifyRabbit, {
-      connection: `amqp://guest:guest@localhost`
-   })
-
-   void fastify.ready().then(async () => {
-
-     const consumer = fastify.rabbitmq.createConsumer({
-       queue: 'foo',
-       queueOptions: {durable: true}
-     }, async (msg: any) => {
-        console.log(msg) // ==> bar
-     })
-      
-   })
-  
+  void fastify.ready().then(async () => {
+    const consumer = fastify.rabbitmq.createConsumer(
+      {
+        queue: "foo",
+        queueOptions: { durable: true },
+      },
+      async (msg: any) => {
+        console.log(msg); // ==> bar
+      },
+    );
+  });
 });
 ```
+
 ### Quick Setup on the Client Side
 
-Within any "endpoint" function, or if you have access to ```fastify.rabbitmq``` you can then call:
+Within any "endpoint" function, or if you have access to `fastify.rabbitmq` you can then call:
 
 ```js
-fastify.get('/rabbitmq', async (request, reply) => {
-   let pub = request.rabbitmq.createPublisher({
-      confirm: true,
-      maxAttempts: 1
-   })
+fastify.get("/rabbitmq", async (request, reply) => {
+  let pub = request.rabbitmq.createPublisher({
+    confirm: true,
+    maxAttempts: 1,
+  });
 
-   await pub.send('foo', "bar") // ==> sent to foo queue
-})
+  await pub.send("foo", "bar"); // ==> sent to foo queue
+});
 ```
 
-Sending the string ```bar``` to the queue called ```foo```.
+Sending the string `bar` to the queue called `foo`.
 
 ## Full Documentation
 
@@ -73,10 +73,10 @@ Sending the string ```bar``` to the queue called ```foo```.
 
 ```typescript
 export interface FastifyRabbitMQOptions {
-   /** Connection String or object pointing to the RabbitMQ Broker Services */
-   connection: string | ConnectionOptions
-   /** To set the custom nNamespace within this plugin instance. Used to register this plugin more than one time. */
-   namespace?: string
+  /** Connection String or object pointing to the RabbitMQ Broker Services */
+  connection: string | ConnectionOptions;
+  /** To set the custom nNamespace within this plugin instance. Used to register this plugin more than one time. */
+  namespace?: string;
 }
 ```
 
@@ -85,14 +85,13 @@ export interface FastifyRabbitMQOptions {
 ##### `connection`
 
 Connection String or object pointing to the RabbitMQ Broker Services.
-This can be an object of ```ConnectionOptions``` from the ```node-rabbitmq-client``` plugin options.
+This can be an object of `ConnectionOptions` from the `node-rabbitmq-client` plugin options.
 
 ##### `namespace`
 
 If you need more than one "connection" to a different set and/or array of RabbitMQ servers,
 either on network or cloud, each registration of the plugin needs it to be in its own namespace.
 If the name space is duplicated, it will fail to load.
-
 
 ## Acknowledgements
 
