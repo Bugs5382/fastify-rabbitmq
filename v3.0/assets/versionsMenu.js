@@ -19,8 +19,3 @@ select.onchange = () => {
 	const newUrl = new URL(newPaths, window.location.origin);
 	window.location.assign(newUrl);
 };
-
-const header = document.querySelector('header.tsd-page-toolbar #tsd-search');
-if (!!header && select.className.includes('title')) {
-	header.prepend(select);
-}
