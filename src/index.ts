@@ -1,41 +1,54 @@
-import { FastifyInstance } from 'fastify'
-import fp from 'fastify-plugin'
-import { ConnectionOptions, Connection as RabbitMQConnection } from 'rabbitmq-client'
-import { FastifyRabbitMQOptions } from './decorate.js'
-import { errors } from './errors.js'
-import { validateOpts } from './validation.js'
-export * from './types.js'
+import { FastifyInstance } from "fastify";
+import fp from "fastify-plugin";
+import {
+  ConnectionOptions,
+  Connection as RabbitMQConnection,
+} from "rabbitmq-client";
+import { FastifyRabbitMQOptions } from "./decorate.js";
+import { errors } from "./errors.js";
+import { validateOpts } from "./validation.js";
+export * from "./types.js";
 
-const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbitMQOptions, connection: any): void => {
-  const {
-    namespace = ''
-  } = options
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+const decorateFastifyInstance = (
+  fastify: FastifyInstance,
+  options: FastifyRabbitMQOptions,
+  connection: any,  
+): void => {
+  const { namespace = "" } = options;
 
-  if (typeof namespace !== 'undefined' && namespace !== '') {
-    fastify.log.debug('[fastify-rabbitmq] Namespace Attempt: %s', namespace)
+  if (typeof namespace !== "undefined" && namespace !== "") {
+    fastify.log.debug("[fastify-rabbitmq] Namespace Attempt: %s", namespace);
   }
-  if (typeof namespace !== 'undefined' && namespace !== '') {
-    if (typeof fastify.rabbitmq === 'undefined') {
-      fastify.decorate('rabbitmq', Object.create(null))
+  if (typeof namespace !== "undefined" && namespace !== "") {
+    if (typeof fastify.rabbitmq === "undefined") {
+      fastify.decorate("rabbitmq", Object.create(null));
     }
 
-    if (typeof fastify.rabbitmq[namespace] !== 'undefined') {
-      throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS(`Already registered with namespace: ${namespace}`)
+    if (typeof fastify.rabbitmq[namespace] !== "undefined") {
+      throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS(
+        `Already registered with namespace: ${namespace}`,
+      );
     }
 
-    fastify.log.trace('[fastify-rabbitmq] Decorate Fastify with Namespace: %', namespace)
-    fastify.rabbitmq[namespace] = connection
+    fastify.log.trace(
+      "[fastify-rabbitmq] Decorate Fastify with Namespace: %",
+      namespace,
+    );
+    fastify.rabbitmq[namespace] = connection;
   } else {
-    if (typeof fastify.rabbitmq !== 'undefined') {
-      throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS('Already registered.')
+    if (typeof fastify.rabbitmq !== "undefined") {
+      throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS(
+        "Already registered.",
+      );
     }
   }
 
-  if (typeof fastify.rabbitmq === 'undefined') {
-    fastify.log.trace('[fastify-rabbitmq] Decorate Fastify')
-    fastify.decorate('rabbitmq', connection)
+  if (typeof fastify.rabbitmq === "undefined") {
+    fastify.log.trace("[fastify-rabbitmq] Decorate Fastify");
+    fastify.decorate("rabbitmq", connection);
   }
-}
+};
 
 /**
  * Main Function
@@ -56,15 +69,15 @@ const decorateFastifyInstance = (fastify: FastifyInstance, options: FastifyRabbi
  *
  */
 const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, opts) => {
-  await validateOpts(opts)
+  await validateOpts(opts);
 
-  const { connection } = opts
+  const { connection } = opts;
 
-  const c = new RabbitMQConnection(connection)
+  const c = new RabbitMQConnection(connection);
 
-  decorateFastifyInstance(fastify, opts, c)
-})
+  decorateFastifyInstance(fastify, opts, c);
+});
 
-export default fastifyRabbit
+export default fastifyRabbit;
 
-export { decorateFastifyInstance, FastifyRabbitMQOptions, ConnectionOptions }
+export { decorateFastifyInstance, FastifyRabbitMQOptions, ConnectionOptions };
