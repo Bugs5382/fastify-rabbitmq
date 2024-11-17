@@ -1,29 +1,35 @@
 /* istanbul ignore next */
-import EventEmitter from 'node:events'
+import EventEmitter from "node:events";
 
-export async function sleep (ms: number): Promise<any> {
-  return await new Promise(resolve => setTimeout(resolve, ms))
+export async function sleep(ms: number): Promise<any> {
+  return await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export interface Deferred<T=any> {
-  resolve: (value: T | PromiseLike<T>) => void
-  reject: (reason?: any) => void
-  promise: Promise<T>
+export interface Deferred<T = any> {
+  resolve: (value: T | PromiseLike<T>) => void;
+  reject: (reason?: any) => void;
+  promise: Promise<T>;
 }
 
-export function createDeferred<T=any> (noUncaught?: boolean): Deferred<T> {
-  const dfd: any = {}
+export function createDeferred<T = any>(noUncaught?: boolean): Deferred<T> {
+  const dfd: any = {};
   dfd.promise = new Promise((resolve, reject) => {
-    dfd.resolve = resolve
-    dfd.reject = reject
-  })
+    dfd.resolve = resolve;
+    dfd.reject = reject;
+  });
   /* istanbul ignore next */
-  if (noUncaught) { // eslint-disable-line
-    dfd.promise.catch(() => {})
+  if (noUncaught) {
+    // eslint-disable-line
+    dfd.promise.catch(() => {});
   }
-  return dfd
+  return dfd;
 }
 
-export async function expectEvent<T=any> (emitter: EventEmitter, name: string | symbol): Promise<T> {
-  return await new Promise<T>((resolve) => { emitter.once(name, resolve) })
+export async function expectEvent<T = any>(
+  emitter: EventEmitter,
+  name: string | symbol,
+): Promise<T> {
+  return await new Promise<T>((resolve) => {
+    emitter.once(name, resolve);
+  });
 }
