@@ -19,6 +19,7 @@ describe("plugin fastify-rabbitmq tests", () => {
   describe("registration tests", () => {
     test("register - error out - no urls", async () => {
       try {
+        // @ts-expect-error
         await app.register(fastifyRabbit);
       } catch (error) {
         expect(error).toEqual(
