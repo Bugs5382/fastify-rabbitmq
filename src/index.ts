@@ -13,7 +13,7 @@ export * from "./types.js";
 const decorateFastifyInstance = (
   fastify: FastifyInstance,
   options: FastifyRabbitMQOptions,
-  connection: any,  
+  connection: any,
 ): void => {
   const { namespace = "" } = options;
 
