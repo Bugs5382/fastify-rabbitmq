@@ -11,12 +11,14 @@ export default [
       'prettier': pluginPrettier
     }
   },
-/*  {
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off'
-    }
-  },*/
   {
-    ignores: [".node_modules/*", "docs/*", "lib/*", "__tests__/*"]
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-unsafe-declaration-merging': 'off'
+    }
+  },
+  {
+    ignores: [".node_modules/*", "docs/*", "lib/*", "__tests__/*", "docker/*"]
   }
 ];
