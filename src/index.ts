@@ -4,12 +4,18 @@ import {
   ConnectionOptions,
   Connection as RabbitMQConnection,
 } from "rabbitmq-client";
-import { FastifyRabbitMQOptions } from "./decorate.js";
-import { errors } from "./errors.js";
-import { validateOpts } from "./validation.js";
-export * from "./types.js";
+import { FastifyRabbitMQOptions } from "./decorate";
+import { errors } from "./errors";
+import { validateOpts } from "./validation";
+export * from "./types";
 
-/* eslint-disable  @typescript-eslint/no-explicit-any */
+/**
+ * How we talk with Fastify
+ * @since 1.0.0
+ * @param fastify
+ * @param options
+ * @param connection
+ */
 const decorateFastifyInstance = (
   fastify: FastifyInstance,
   options: FastifyRabbitMQOptions,
@@ -80,4 +86,5 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, opts) => {
 
 export default fastifyRabbit;
 
-export { decorateFastifyInstance, FastifyRabbitMQOptions, ConnectionOptions };
+export { decorateFastifyInstance };
+export type { ConnectionOptions, FastifyRabbitMQOptions };

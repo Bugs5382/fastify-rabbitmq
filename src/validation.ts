@@ -1,6 +1,11 @@
-import { FastifyRabbitMQOptions } from "./decorate.js";
-import { errors } from "./errors.js";
+import { FastifyRabbitMQOptions } from "./decorate";
+import { errors } from "./errors";
 
+/**
+ * Validate Options
+ * @since 1.0.0
+ * @param options
+ */
 export const validateOpts = async (
   options: FastifyRabbitMQOptions,
 ): Promise<void> => {
