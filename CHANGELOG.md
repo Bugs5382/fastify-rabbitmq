@@ -1,5 +1,21 @@
 # Fastify RabbitMQ
 
+## v3.3.0 - 2025-05-31
+
+#### What Changed 👀
+
+#### 🚀 Features
+
+- feat: remove old build method @Bugs5382 (#108)
+
+#### 🧩 Dependency Updates
+
+- feat: remove old build method @Bugs5382 (#108)
+
+### Extra
+
+**Full Changelog**: https://github.com/Bugs5382/fastify-rabbitmq/compare/v3.2.0...v3.3.0
+
 ## v3.2.0 - 2025-03-25
 
 #### What Changed 👀
