@@ -10,10 +10,10 @@ labels: bug
 
 ## Environment
 
--   Fastify plugin version:
--   TypeScript version:
--   Node.js version:
--   OS:
+- Fastify plugin version:
+- TypeScript version:
+- Node.js version:
+- OS:
 
 ## Expected Behavior
 
@@ -24,4 +24,3 @@ labels: bug
 <!-- What does this plugin fail to do? -->
 
 ## Steps to reproduce the bug
-
