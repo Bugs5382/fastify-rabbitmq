@@ -9,6 +9,13 @@ import { errors } from "./errors";
 import { validateOpts } from "./validation";
 export * from "./types";
 
+/**
+ * How we talk with Fastify
+ * @since 1.0.0
+ * @param fastify
+ * @param options
+ * @param connection
+ */
 const decorateFastifyInstance = (
   fastify: FastifyInstance,
   options: FastifyRabbitMQOptions,
