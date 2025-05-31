@@ -12,14 +12,21 @@ on:
       - ready_for_review
       - synchronize
 
+
 jobs:
+
   Build:
     runs-on: ubuntu-latest
     services:
-      rabbitmq:
-        image: rabbitmq:4.0.2-alpine
+      redis:
+        image: redis:latest
         ports:
-          - 5672:5672
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
     strategy:
       matrix:
         node-version: [20.x, 'lts/*', 'latest']
@@ -33,8 +40,8 @@ jobs:
 
       - name: Pre-Run
         run: |
-          npm install --package-lock-only --force
-          npm install --ignore-scripts --force
+          npm install --package-lock-only
+          npm install --ignore-scripts
 
       - name: Run Tests and Lint
         run: |
