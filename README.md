@@ -97,7 +97,7 @@ If the name space is duplicated, it will fail to load.
 
 - [node-rabbitmq-client](https://www.npmjs.com/package/rabbitmq-client)
 - [fastify](https://fastify.dev/)
-- ... and my Wife and Baby Girl.
+- ... and my Wife, Baby Girl, and Boy.
 
 ## License
 

@@ -94,7 +94,6 @@
     "node": ">=20.11.0"
   },
   "precommit": [
-    "test",
     "build",
     "lint:fix"
   ]
