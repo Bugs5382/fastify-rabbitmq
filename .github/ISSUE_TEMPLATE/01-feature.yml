@@ -1,0 +1,26 @@
+name: Feature / task
+description: A unit of new work or an enhancement.
+title: "feat(<scope>): <short description>"
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What should change and why. State the intended outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: What must be true for this to be done. Use checkboxes where helpful.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Constraints, dependencies, or links to related issues.
+    validations:
+      required: false

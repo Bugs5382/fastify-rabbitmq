@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Git pre-commit hook (enforcement).
+# - Emoji are banned in every staged text file EXCEPT CI workflow files, where
+#   they are allowed in job/step names.
+# - AI-tell phrases are banned too, EXCEPT in files whose purpose is to document
+#   the rule (CLAUDE.md, the governance hooks, the pattern list), which
+#   legitimately contain those phrases as examples.
+set -euo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+# shellcheck source=/dev/null
+source "$ROOT/.claude/hooks/lib.sh"
+
+is_binary() {
+  case "$1" in
+    *.png|*.jpg|*.jpeg|*.gif|*.pdf|*.ico|*.svg|*.woff|*.woff2|*.ttf|*.eot|*.zip|*.gz|*.jar|*.keystore) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# Paths exempt from the AI-tell TEXT scan (still subject to the emoji scan).
+tells_exempt() {
+  case "$1" in
+    CLAUDE.md|*/CLAUDE.md) return 0 ;;
+    .claude/*|*/.claude/*) return 0 ;;
+    governance/*|*/governance/*) return 0 ;;
+    .github/workflows/*|*workflows/*.yml|*workflows/*.yaml) return 0 ;;
+    *forbidden-text.txt) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# Paths where emoji ARE allowed: GitHub config (CI workflow job/step names and
+# release-drafter category titles legitimately use emoji).
+emoji_exempt() {
+  case "$1" in
+    .github/*|*/.github/*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+fail=0
+while IFS= read -r f; do
+  [ -f "$f" ] || continue
+  case "$f" in .git/*) continue ;; esac
+  is_binary "$f" && continue
+
+  if ! emoji_exempt "$f"; then
+    emoji="$(gov_find_emoji < "$f")"
+    if [ -n "$emoji" ]; then echo "pre-commit: emoji not allowed in $f:" >&2; echo "$emoji" >&2; fail=1; fi
+  fi
+
+  if ! tells_exempt "$f"; then
+    tells="$(gov_find_text_tells < "$f")"
+    if [ -n "$tells" ]; then echo "pre-commit: AI-tell not allowed in $f:" >&2; echo "$tells" >&2; fail=1; fi
+  fi
+done < <(git diff --cached --name-only --diff-filter=ACM)
+
+[ "$fail" -eq 0 ] || { echo "pre-commit: blocked. Remove the above before committing." >&2; exit 1; }
+exit 0
