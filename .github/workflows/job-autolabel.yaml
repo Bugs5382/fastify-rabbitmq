@@ -1,0 +1,25 @@
+name: Autolabel
+# Applies a categorizing label to each PR from its conventional-commit title,
+# using the release-drafter autolabeler in release-drafter.yml. disable-releaser
+# keeps this from drafting a release -- this run only labels. job-label-checker
+# then passes automatically (it re-runs on the `labeled` event).
+on:
+  pull_request:
+    types: [opened, reopened, edited, synchronize]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  autolabel:
+    name: Autolabel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply labels from PR title
+        uses: release-drafter/release-drafter@v6
+        with:
+          disable-releaser: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

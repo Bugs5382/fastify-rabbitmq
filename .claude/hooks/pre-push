@@ -23,9 +23,13 @@ if [ -f go.mod ]; then
 fi
 
 if [ -f package.json ]; then
-  has() { node -e "process.exit(require('./package.json').scripts?.['$1']?0:1)" 2>/dev/null; }
-  if has lint; then run npm run --silent lint || { echo "pre-push: npm lint failed" >&2; exit 1; }; fi
-  if has test; then run npm test --silent || { echo "pre-push: npm test failed" >&2; exit 1; }; fi
+  if [ ! -d node_modules ]; then
+    echo "pre-push: node_modules not installed; skipping npm lint/test (CI runs them)"
+  else
+    has() { node -e "process.exit(require('./package.json').scripts?.['$1']?0:1)" 2>/dev/null; }
+    if has lint; then run npm run --silent lint || { echo "pre-push: npm lint failed" >&2; exit 1; }; fi
+    if has test; then run npm test --silent || { echo "pre-push: npm test failed" >&2; exit 1; }; fi
+  fi
 fi
 
 if [ -f pyproject.toml ]; then

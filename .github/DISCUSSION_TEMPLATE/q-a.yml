@@ -1,0 +1,21 @@
+title: "[Q&A] "
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For usage help and questions. For a bug or a feature request, open an issue instead.
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What are you trying to do, and what have you tried so far?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Which version of fastify-rabbitmq are you on?
+    validations:
+      required: false

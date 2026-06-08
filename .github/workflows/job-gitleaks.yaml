@@ -1,22 +1,22 @@
 name: Gitleaks
+# Secret scan on EVERY push and PR -- no paths-ignore, because a secret can land
+# in any file, docs included. Hard failure: the action exits non-zero on a finding.
 on:
   push:
-    paths-ignore:
-      - '**.md'
   pull_request:
-    branches:
-      - main
+    branches: [main]
 permissions:
   contents: read
 jobs:
   gitleaks:
-    name: Gitleaks (secret scan)
+    name: 🔒 Gitleaks (secret scan)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Gitleaks
+      - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
