@@ -1,0 +1,94 @@
+name: Release Manager
+# Runs on every push to main, BEFORE the maintainer publishes the GitHub Release.
+# Anticipates the next version from release-drafter, bumps package.json, writes
+# CHANGELOG.md via the Bugs5382 changelog action, and pushes a [skip ci] commit
+# so main always carries the prepped version + changelog. Nothing tags here -
+# the maintainer publishes the Release manually, which creates the tag and
+# triggers the npm publish workflow.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  Update_Version:
+    name: 🚀 Update Changelog & Prep Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check release prerequisites
+        shell: bash
+        env:
+          APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+        run: |
+          if [ -z "$APP_PRIVATE_KEY" ]; then
+            echo "::error title=Release setup required::APP_PRIVATE_KEY is not set."
+            echo "One-time setup required before the Release Manager works (per repo):"
+            echo "  1. Install the Bugs5382 release GitHub App on this repository."
+            echo "  2. Add the APP_PRIVATE_KEY secret (the App private key), org or repo level."
+            echo "  3. Add the release App as a bypass actor on the branch ruleset, so the"
+            echo "     [skip ci] changelog push to main is not blocked."
+            echo "  The App Client ID is hard-coded in this workflow; only the above are manual."
+            echo "  Re-check this list whenever the release method is updated."
+            exit 1
+          fi
+          echo "Release prerequisites present."
+
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3.1.1
+        with:
+          client-id: "Iv23ligVrrLzGPXe28dn"
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: 📂 Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          fetch-depth: 0
+
+      - name: 📝 Release Drafter (Anticipate Version)
+        id: drafter
+        uses: release-drafter/release-drafter@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔎 Detect releasable changes
+        id: releasable
+        env:
+          BODY: ${{ steps.drafter.outputs.body }}
+        run: |
+          # release-drafter's body lists the categorized PRs since the last
+          # release. With nothing to release (every change excluded, e.g.
+          # skip-changelog), it carries no PR entries -- skip the bump/changelog/
+          # commit so the manifest stays at the published version instead of
+          # drifting ahead.
+          if printf '%s' "$BODY" | grep -qE '\(#[0-9]+\)'; then
+            echo "yes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No releasable changes since the last release; skipping the prep commit."
+            echo "yes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 🔢 Bump Package Version
+        if: steps.releasable.outputs.yes == 'true'
+        run: npm version "v${{ steps.drafter.outputs.resolved_version }}" --no-git-tag-version --allow-same-version
+
+      - name: 📤 Run Changelog Action
+        if: steps.releasable.outputs.yes == 'true'
+        uses: bugs5382/changelog-updater-action@v0.3.2
+        with:
+          tag: v${{ steps.drafter.outputs.resolved_version }}
+          notes: ${{ steps.drafter.outputs.body }}
+          path: .
+          diff: 'true'
+
+      - name: 📤 Commit and Push Version Update
+        if: steps.releasable.outputs.yes == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "chore(pre-release): v${{ steps.drafter.outputs.resolved_version }} [skip ci]"
