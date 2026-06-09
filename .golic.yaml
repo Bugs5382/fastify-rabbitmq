@@ -1,0 +1,17 @@
+# golic ships no built-in TypeScript rules (see Bugs5382/golic#19); define the
+# block-comment style here so the MIT header lands on TS sources. Remove once
+# golic bundles these rules upstream.
+golic:
+  rules:
+    .ts:
+      prefix: "/*"
+      suffix: "*/"
+    .tsx:
+      prefix: "/*"
+      suffix: "*/"
+    .mts:
+      prefix: "/*"
+      suffix: "*/"
+    .cts:
+      prefix: "/*"
+      suffix: "*/"

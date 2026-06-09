@@ -1,13 +1,33 @@
+/*
+MIT License
+
+Copyright (c) 2026 Shane Froebel
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+*/
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import {
-  ConnectionOptions,
-  Connection as RabbitMQConnection,
-} from "rabbitmq-client";
+import { Connection as RabbitMQConnection } from "rabbitmq-client";
+
 import { FastifyRabbitMQOptions } from "./decorate";
 import { errors } from "./errors";
 import { validateOpts } from "./validation";
-export * from "./types";
+export { type FastifyRabbitMQOptions } from "./decorate";
 
 /**
  * How we talk with Fastify
@@ -23,34 +43,33 @@ const decorateFastifyInstance = (
 ): void => {
   const { namespace = "" } = options;
 
-  if (typeof namespace !== "undefined" && namespace !== "") {
+  if (namespace !== undefined && namespace !== "") {
     fastify.log.debug("[fastify-rabbitmq] Namespace Attempt: %s", namespace);
   }
-  if (typeof namespace !== "undefined" && namespace !== "") {
-    if (typeof fastify.rabbitmq === "undefined") {
+  if (namespace !== undefined && namespace !== "") {
+    if (fastify.rabbitmq === undefined) {
       fastify.decorate("rabbitmq", Object.create(null));
     }
 
-    if (typeof fastify.rabbitmq[namespace] !== "undefined") {
+    if (fastify.rabbitmq[namespace] !== undefined) {
       throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS(
         `Already registered with namespace: ${namespace}`,
       );
     }
 
     fastify.log.trace(
-      "[fastify-rabbitmq] Decorate Fastify with Namespace: %",
-      namespace,
+      `[fastify-rabbitmq] Decorate Fastify with Namespace: ${namespace}`,
     );
     fastify.rabbitmq[namespace] = connection;
   } else {
-    if (typeof fastify.rabbitmq !== "undefined") {
+    if (fastify.rabbitmq !== undefined) {
       throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS(
         "Already registered.",
       );
     }
   }
 
-  if (typeof fastify.rabbitmq === "undefined") {
+  if (fastify.rabbitmq === undefined) {
     fastify.log.trace("[fastify-rabbitmq] Decorate Fastify");
     fastify.decorate("rabbitmq", connection);
   }
@@ -87,4 +106,6 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, opts) => {
 export default fastifyRabbit;
 
 export { decorateFastifyInstance };
-export type { ConnectionOptions, FastifyRabbitMQOptions };
+
+export * from "./types";
+export { type ConnectionOptions } from "rabbitmq-client";

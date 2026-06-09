@@ -20,25 +20,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
-import path from "node:path";
-import { defineConfig } from "vitest/config";
+import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
-  test: {
-    coverage: {
-      provider: "v8",
-      exclude: [
-        "*.mts",
-        "*.mjs",
-        "**/__tests__/**/**",
-        "**/docs/**",
-        "**/dist/**",
-      ],
-    },
-  },
+  clean: true,
+  // Declarations are emitted by tsc, not rolldown's dts bundler: this package
+  // augments `fastify` (declare module "fastify"), which the bundler can't
+  // follow through fastify's own types. tsc handles the augmentation natively.
+  dts: false,
+  entry: ["src/index.ts"],
+  format: ["esm", "cjs"],
+  sourcemap: true,
 });
