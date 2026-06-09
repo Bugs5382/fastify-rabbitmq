@@ -3,7 +3,7 @@ import { Connection as RabbitMQConnection } from "rabbitmq-client";
 declare module "fastify" {
   export interface FastifyInstance {
     /** Main Decorator for Fastify **/
-    rabbitmq: RabbitMQConnection & fastifyRabbitMQ.FastifyRabbitMQNO;
+    rabbitmq: fastifyRabbitMQ.FastifyRabbitMQNO & RabbitMQConnection;
   }
 }
 

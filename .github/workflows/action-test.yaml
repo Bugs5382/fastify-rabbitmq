@@ -59,4 +59,5 @@ jobs:
             package-lock.json
             README.md
             LICENSE
-            ./lib
+            CHANGELOG.md
+            dist

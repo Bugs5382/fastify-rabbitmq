@@ -1,13 +1,11 @@
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import {
-  ConnectionOptions,
-  Connection as RabbitMQConnection,
-} from "rabbitmq-client";
+import { Connection as RabbitMQConnection } from "rabbitmq-client";
+
 import { FastifyRabbitMQOptions } from "./decorate";
 import { errors } from "./errors";
 import { validateOpts } from "./validation";
-export * from "./types";
+export { type FastifyRabbitMQOptions } from "./decorate";
 
 /**
  * How we talk with Fastify
@@ -23,15 +21,15 @@ const decorateFastifyInstance = (
 ): void => {
   const { namespace = "" } = options;
 
-  if (typeof namespace !== "undefined" && namespace !== "") {
+  if (namespace !== undefined && namespace !== "") {
     fastify.log.debug("[fastify-rabbitmq] Namespace Attempt: %s", namespace);
   }
-  if (typeof namespace !== "undefined" && namespace !== "") {
-    if (typeof fastify.rabbitmq === "undefined") {
+  if (namespace !== undefined && namespace !== "") {
+    if (fastify.rabbitmq === undefined) {
       fastify.decorate("rabbitmq", Object.create(null));
     }
 
-    if (typeof fastify.rabbitmq[namespace] !== "undefined") {
+    if (fastify.rabbitmq[namespace] !== undefined) {
       throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS(
         `Already registered with namespace: ${namespace}`,
       );
@@ -43,14 +41,14 @@ const decorateFastifyInstance = (
     );
     fastify.rabbitmq[namespace] = connection;
   } else {
-    if (typeof fastify.rabbitmq !== "undefined") {
+    if (fastify.rabbitmq !== undefined) {
       throw new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS(
         "Already registered.",
       );
     }
   }
 
-  if (typeof fastify.rabbitmq === "undefined") {
+  if (fastify.rabbitmq === undefined) {
     fastify.log.trace("[fastify-rabbitmq] Decorate Fastify");
     fastify.decorate("rabbitmq", connection);
   }
@@ -87,4 +85,6 @@ const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, opts) => {
 export default fastifyRabbit;
 
 export { decorateFastifyInstance };
-export type { ConnectionOptions, FastifyRabbitMQOptions };
+
+export * from "./types";
+export { type ConnectionOptions } from "rabbitmq-client";

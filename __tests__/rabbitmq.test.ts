@@ -1,5 +1,6 @@
 import fastify, { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
+
 import fastifyRabbit from "../src";
 import { errors } from "../src/errors";
 
@@ -19,7 +20,7 @@ describe("plugin fastify-rabbitmq tests", () => {
   describe("registration tests", () => {
     test("register - error out - no urls", async () => {
       try {
-        // @ts-expect-error
+        // @ts-expect-error registering with no options is a type error; this exercises the runtime validation.
         await app.register(fastifyRabbit);
       } catch (error) {
         expect(error).toEqual(
@@ -32,7 +33,7 @@ describe("plugin fastify-rabbitmq tests", () => {
 
     test("register - error out - connection not defined", async () => {
       try {
-        // @ts-expect-error
+        // @ts-expect-error connection: undefined is not assignable; this exercises the runtime guard.
         await app.register(fastifyRabbit, { connection: undefined });
       } catch (error) {
         expect(error).toEqual(
@@ -45,7 +46,7 @@ describe("plugin fastify-rabbitmq tests", () => {
 
     test("register - error out - urls is not a string", async () => {
       try {
-        // @ts-expect-error
+        // @ts-expect-error connection: 1 (a number) is not a valid type; this exercises the runtime validation.
         await app.register(fastifyRabbit, {
           connection: 1,
         });
@@ -60,7 +61,7 @@ describe("plugin fastify-rabbitmq tests", () => {
 
     test("register - error out - urls less than 0", async () => {
       try {
-        // @ts-expect-error
+        // @ts-expect-error connection: [] (an array) is not a valid type; this exercises the runtime validation.
         await app.register(fastifyRabbit, {
           connection: [],
         });
@@ -84,8 +85,8 @@ describe("plugin fastify-rabbitmq tests", () => {
         await app.register(fastifyRabbit, {
           connection: RABBITMQ_URL,
         });
-      } catch (err) {
-        expect(err).toEqual(
+      } catch (error) {
+        expect(error).toEqual(
           new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS("Already registered."),
         );
       }
@@ -102,8 +103,8 @@ describe("plugin fastify-rabbitmq tests", () => {
           connection: RABBITMQ_URL,
           namespace: "error",
         });
-      } catch (err) {
-        expect(err).toEqual(
+      } catch (error) {
+        expect(error).toEqual(
           new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS(
             "Already registered with namespace: error",
           ),
@@ -129,7 +130,7 @@ describe("plugin fastify-rabbitmq tests", () => {
         expect(app.rabbitmq).toHaveProperty("ready");
 
         await app.rabbitmq.close();
-      } catch (e) {
+      } catch {
         /* should not error */
       }
     });
@@ -155,7 +156,7 @@ describe("plugin fastify-rabbitmq tests", () => {
           });
 
         await app.rabbitmq.unittest.close();
-      } catch (e) {
+      } catch {
         /* should not error */
       }
     });
@@ -172,7 +173,7 @@ describe("plugin fastify-rabbitmq tests", () => {
             expect(app.rabbitmq.unittest).toHaveProperty("createConsumer");
             await app.rabbitmq.close();
           });
-      } catch (e) {
+      } catch {
         /* should not error */
       }
     });
@@ -189,7 +190,7 @@ describe("plugin fastify-rabbitmq tests", () => {
             expect(app.rabbitmq.unittest).toHaveProperty("createConsumer");
             await app.rabbitmq.close();
           });
-      } catch (e) {
+      } catch {
         /* should not error */
       }
     });

@@ -15,7 +15,7 @@ export default defineConfig({
         "*.mjs",
         "**/__tests__/**/**",
         "**/docs/**",
-        "**/lib/**",
+        "**/dist/**",
       ],
     },
   },

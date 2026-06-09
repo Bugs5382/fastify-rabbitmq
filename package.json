@@ -21,32 +21,34 @@
   "author": "Shane Froebel",
   "exports": {
     ".": {
-      "types": "./lib/types/index.d.ts",
-      "import": "./lib/esm/index.mjs",
-      "require": "./lib/cjs/index.js",
-      "default": "./lib/cjs/index.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
-  "main": "./lib/cjs/index.js",
-  "module": "./lib/esm/index.mjs",
-  "types": "./lib/types/index.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "files": [
-    "lib/",
+    "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsup",
-    "build:dev": "NODE_ENV=development tsup",
-    "clean": "rm -rf coverage docs lib temp",
-    "format:check": "prettier --check '**/*.{md,ts,json,mts}'",
-    "format:write": "prettier --write '**/*.{md,ts,json,mts}'",
-    "lint": "npm run lint:npm && eslint | snazzy && npm run format:check",
-    "lint:fix": "npm run lint:npm && eslint --fix | snazzy && npm run format:write",
+    "build": "tsdown && tsc --emitDeclarationOnly",
+    "clean": "rm -rf coverage docs dist temp",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "lint:npm": "npmPkgJsonLint .",
     "lint:package": "npx sort-package-json",
     "pack": "npm pack",
-    "prepublishOnly": "npm run clean && npm run build && npm run pack",
+    "prepublishOnly": "npm run clean && npm run build",
     "test": "vitest run",
     "test:coverage": "vitest --coverage",
     "test:verbose": "vitest run --reporter verbose",
@@ -54,7 +56,9 @@
     "typedoc": "typedoc",
     "typedoc:watch": "typedoc -watch",
     "update": "npx npm-check-updates -u --enginesNode && npm run update:post-update",
-    "update:post-update": "npm install && npm run test"
+    "update:post-update": "npm install && npm run test",
+    "build:watch": "tsdown --watch",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@fastify/error": "^4.1.0",
@@ -63,7 +67,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",
-    "@ianvs/prettier-plugin-sort-imports": "^4.4.2",
     "@shipgirl/typedoc-plugin-versions": "^0.3.1",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^8.33.0",
@@ -71,24 +74,22 @@
     "@vitest/coverage-v8": "^3.1.4",
     "@vitest/ui": "^3.1.4",
     "eslint": "^9.28.0",
-    "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-prettier": "^5.4.1",
     "eslint-plugin-sort-class-members": "^1.21.0",
     "fastify": "^5.3.3",
     "npm-check-updates": "^18.0.1",
     "npm-package-json-lint": "^8.0.0",
     "npm-package-json-lint-config-default": "^7.0.1",
     "pre-commit": "^1.2.2",
-    "prettier-plugin-organize-imports": "^4.1.0",
     "snazzy": "^9.0.0",
     "sort-package-json": "^3.2.1",
     "ts-node": "^10.9.2",
     "tsd": "^0.32.0",
-    "tsup": "^8.5.0",
     "typedoc": "^0.28.5",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.33.0",
-    "vitest": "^3.1.4"
+    "vitest": "^3.1.4",
+    "@the-rabbit-hole/eslint-config": "^0.4.0",
+    "tsdown": "^0.22.2"
   },
   "engines": {
     "node": ">=20.11.0"

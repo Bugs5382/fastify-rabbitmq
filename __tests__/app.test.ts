@@ -1,6 +1,7 @@
 import fastify, { FastifyInstance } from "fastify";
 import { Consumer, Publisher, RPCClient } from "rabbitmq-client";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
+
 import fastifyRabbit from "../src";
 import { createDeferred, expectEvent, sleep } from "./__utils__/utils";
 
@@ -37,15 +38,15 @@ describe("fastify-rabbitmq sample app tests", () => {
     test("create/get sender  and receiver/listener (foo)", async () => {
       const LISTEN_QUEUE_NAME = "foo";
 
-      const dfd = createDeferred<void>(); // eslint-disable-line
+      const dfd = createDeferred<void>();
 
       await app.rabbitmq.queueDelete(LISTEN_QUEUE_NAME);
 
       sub = app.rabbitmq.createConsumer(
         {
+          qos: { prefetchCount: 2 },
           queue: LISTEN_QUEUE_NAME,
           queueOptions: { durable: true },
-          qos: { prefetchCount: 2 },
         },
         async (msg: any) => {
           expect(msg.body.id).toBe(1);
@@ -125,15 +126,15 @@ describe("fastify-rabbitmq sample app tests", () => {
     test("create/get sender and receiver/listener (bar)", async () => {
       const LISTEN_QUEUE_NAME = "bar";
 
-      const dfd = createDeferred<void>(); // eslint-disable-line
+      const dfd = createDeferred<void>();
 
       await app.rabbitmq.unittest.queueDelete(LISTEN_QUEUE_NAME);
 
       sub = app.rabbitmq.unittest.createConsumer(
         {
+          qos: { prefetchCount: 2 },
           queue: LISTEN_QUEUE_NAME,
           queueOptions: { durable: true },
-          qos: { prefetchCount: 2 },
         },
         async (msg: any) => {
           expect(msg.body.id).toBe(1);
