@@ -25,6 +25,25 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      # rabbitmq-client is the wrapped upstream: app.rabbitmq re-exports its
+      # Connection wholesale, so the release mirrors the client's own bump --
+      # a major client bump is breaking, a minor is a feature. A patch keeps the
+      # default `dependencies` label and stays a patch.
+      - name: Promote a rabbitmq-client bump
+        if: contains(steps.metadata.outputs.dependency-names, 'rabbitmq-client')
+        run: |
+          case "${{ steps.metadata.outputs.update-type }}" in
+            version-update:semver-major)
+              gh pr edit "$PR_URL" --add-label breaking ;;
+            version-update:semver-minor)
+              gh pr edit "$PR_URL" --add-label enhancement ;;
+            *)
+              echo "rabbitmq-client patch bump -- keeping the default dependencies (patch) tier" ;;
+          esac
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Enable auto-merge
         run: gh pr merge --auto --squash "$PR_URL"
         env:
