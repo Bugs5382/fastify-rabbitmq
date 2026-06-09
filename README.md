@@ -153,8 +153,7 @@ be trapped inside this plugin's encapsulation context):
 ```ts
 // plugins/messaging.ts
 import fp from "fastify-plugin";
-import fastifyRabbitMQ from "fastify-rabbitmq";
-import type { Publisher } from "rabbitmq-client";
+import fastifyRabbitMQ, { type Publisher } from "fastify-rabbitmq";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -235,6 +234,10 @@ Why this shape works well:
 - **Swappable.** Because routes only know `app.events`, you can change brokers, add a
   [namespace](#5-multiple-connections-with-namespaces), or stub the decorator in a test
   without touching route code.
+
+> The types you need — `Publisher`, `Consumer`, `RPCClient`, `Connection`, `ConnectionOptions`,
+> `Envelope`, the message types, and the AMQP error classes — are re-exported from
+> `fastify-rabbitmq`. Import them from here, not from `rabbitmq-client`.
 
 ## 📖 API Reference (`fastify.rabbitmq`)
 
