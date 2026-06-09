@@ -29,11 +29,14 @@ tells_exempt() {
   esac
 }
 
-# Paths where emoji ARE allowed: GitHub config (CI workflow job/step names and
-# release-drafter category titles legitimately use emoji).
+# Paths where emoji ARE allowed: Markdown docs (Bugs5382 standard), GitHub
+# config (CI workflow job/step names and release-drafter category titles), and
+# the hub's governance/github tree that holds that GitHub config before sync.
 emoji_exempt() {
   case "$1" in
     .github/*|*/.github/*) return 0 ;;
+    *.md) return 0 ;;
+    governance/github/*) return 0 ;;
     *) return 1 ;;
   esac
 }

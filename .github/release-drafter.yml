@@ -1,56 +1,73 @@
+# Canonical release-drafter config for every Bugs5382 repo (libraries/extensions
+# use release-drafter; only apps would use release-please, which we do not ship).
+# The autolabeler derives the categorizing label from the conventional-commit PR
+# title, so labeling is near-zero-effort; job-label-checker is the backstop.
 name-template: 'v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'
 template: |
-  ## What Changed 👀
-  
+  # What Changed 👀
+
   $CHANGES
-  
+
   # Extra
-  
+
   **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
 categories:
+  - title: 💥 Breaking Changes
+    labels: [breaking]
   - title: 🚀 Features
-    labels:
-      - feature
-      - enhancement
+    labels: [enhancement]
   - title: 🐛 Bug Fixes
-    labels:
-      - fix
-      - bug
+    labels: [bug, fix]
+  - title: ⚡ Performance
+    labels: [performance]
   - title: ⚠️ Changes
-    labels:
-      - changed
+    labels: [refactor, changed]
   - title: ⛔️ Deprecated
-    labels:
-      - deprecated
+    labels: [deprecated]
   - title: 🗑 Removed
-    labels:
-      - removed
+    labels: [removed]
   - title: 🔐 Security
-    labels:
-      - security
+    labels: [security]
   - title: 📄 Documentation
-    labels:
-      - docs
-      - documentation
+    labels: [documentation]
   - title: 🧩 Dependency Updates
-    labels:
-      - deps
-      - dependencies
+    labels: [dependencies]
     collapse-after: 5
-prerelease-identifier: 'beta'
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
-change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
+change-title-escapes: '\<*_&'
 version-resolver:
   major:
-    labels:
-      - major
+    labels: [breaking]
   minor:
-    labels:
-      - minor
+    labels: [enhancement]
   patch:
-    labels:
-      - patch
+    labels: [fix, bug, performance, refactor, changed, deprecated, removed, security, documentation, dependencies]
   default: patch
+autolabeler:
+  - label: breaking
+    title:
+      - '/^[a-z]+(\(.+\))?!:/'
+      - '/BREAKING[ -]CHANGE/'
+  - label: enhancement
+    title: ['/^feat(\(.+\))?:/']
+  - label: fix
+    title: ['/^fix(\(.+\))?:/']
+  - label: performance
+    title: ['/^perf(\(.+\))?:/']
+  - label: refactor
+    title: ['/^refactor(\(.+\))?:/']
+  - label: documentation
+    title: ['/^docs(\(.+\))?:/']
+  - label: dependencies
+    title:
+      - '/^build(\(.+\))?:/'
+      - '/^chore\(deps.*\):/'
+  - label: security
+    title: ['/^security(\(.+\))?:/']
+  - label: skip-changelog
+    title:
+      - '/^(ci|test|style)(\(.+\))?:/'
+      - '/^chore(?!\(deps)(\(.+\))?:/'
 exclude-labels:
   - skip-changelog

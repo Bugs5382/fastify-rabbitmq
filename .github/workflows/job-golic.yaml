@@ -1,0 +1,37 @@
+name: GoLic
+# Verify every source file carries the MIT license header. golic (Bugs5382's own
+# tool) is run through go-task (`task license`) -- the standard runner for every
+# project. `golic inject --dry -x` fails the check if a header is missing; it never
+# modifies files. Docs (**.md) are skipped -- they carry no header.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths-ignore: ['**.md']
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  golic:
+    name: 🔏 License headers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 'stable'
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify MIT headers
+        run: |
+          export PATH="${PATH}:$(go env GOPATH)/bin"
+          task license

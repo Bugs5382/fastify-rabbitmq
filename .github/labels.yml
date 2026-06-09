@@ -1,0 +1,43 @@
+# Canonical label set for every Bugs5382 repo. job-label-sync.yaml reconciles a
+# repo to exactly this set (it also deletes labels not listed here). Aligned to
+# the release-drafter categories + version-resolver and the conventional-commit
+# prefixes the autolabeler maps from PR titles.
+- name: breaking
+  color: "b60205"
+  description: "Breaking change. Major version bump."
+- name: enhancement
+  color: "a2eeef"
+  description: "New feature (feat). Minor version bump."
+- name: fix
+  color: "0e8a16"
+  description: "Bug fix (fix). Patch."
+- name: bug
+  color: "d73a4a"
+  description: "Something isn't working."
+- name: performance
+  color: "fbca04"
+  description: "Performance improvement (perf)."
+- name: refactor
+  color: "c5def5"
+  description: "Internal change / refactor."
+- name: changed
+  color: "bfdadc"
+  description: "Behavior change."
+- name: deprecated
+  color: "fef2c0"
+  description: "Deprecated functionality."
+- name: removed
+  color: "e11d21"
+  description: "Removed functionality."
+- name: security
+  color: "ee0701"
+  description: "Security fix."
+- name: documentation
+  color: "0075ca"
+  description: "Documentation only (docs)."
+- name: dependencies
+  color: "0366d6"
+  description: "Dependency updates."
+- name: skip-changelog
+  color: "ededed"
+  description: "Excluded from release notes (chore/ci/test/style)."
