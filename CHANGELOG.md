@@ -15,6 +15,7 @@
 
 #### 📄 Documentation
 
+- docs: point consumers at the re-exported client types @Bugs5382 (#137)
 - docs: show how to encapsulate messaging in a Fastify plugin @Bugs5382 (#131)
 - docs: rewrite README to standard, add AGENTS.md, fix typedoc parent-export @Bugs5382 (#124)
 
