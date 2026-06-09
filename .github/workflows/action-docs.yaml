@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get the gh-pages repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: gh-pages
 
@@ -23,7 +23,7 @@ jobs:
           tar -cvf documentation.tar ./docs
 
       - name: Create a document artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: documentation
           path: documentation.tar
@@ -33,13 +33,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout src
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Make Directory
         run: mkdir -p ./docs
 
       - name: Download the existing documents artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: documentation
 
@@ -47,7 +47,7 @@ jobs:
         run: tar -xf documentation.tar ./docs -C ./docs
 
       - name: Build
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: lts/*
 
@@ -63,7 +63,7 @@ jobs:
         run: tar -cvf newdocumentation.tar ./docs
 
       - name: Create a new document artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: newdocumentation
           path: newdocumentation.tar
@@ -73,13 +73,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the gh-pages repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: gh-pages
 
       - name: Checkout the gh-pages repo
         if: env.exists == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: gh-pages
 
@@ -87,7 +87,7 @@ jobs:
         run: mkdir -p ./docs
 
       - name: Download the new documents artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: newdocumentation
         continue-on-error: true
