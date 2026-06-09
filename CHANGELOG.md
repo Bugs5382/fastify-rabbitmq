@@ -8,6 +8,10 @@
 
 - build: migrate to tsdown and the shared eslint-config @Bugs5382 (#119)
 
+#### 🐛 Bug Fixes
+
+- fix: validate connection shape and reject invalid registration options @Bugs5382 (#125)
+
 #### 📄 Documentation
 
 - docs: show how to encapsulate messaging in a Fastify plugin @Bugs5382 (#131)
