@@ -108,4 +108,32 @@ export default fastifyRabbit;
 export { decorateFastifyInstance };
 
 export * from "./types";
-export { type ConnectionOptions } from "rabbitmq-client";
+
+// Re-export the rabbitmq-client surface so consumers import from this package
+// instead of reaching for the wrapped client. These are the exact types the
+// app.rabbitmq decorator hands back, so they stay correct without owning a
+// parallel definition.
+export type {
+  AsyncMessage,
+  Channel,
+  Connection,
+  ConnectionOptions,
+  Consumer,
+  ConsumerHandler,
+  ConsumerProps,
+  Envelope,
+  HeaderFields,
+  MessageBody,
+  Publisher,
+  PublisherProps,
+  ReturnedMessage,
+  RPCClient,
+  RPCProps,
+  SyncMessage,
+} from "rabbitmq-client";
+export {
+  AMQPChannelError,
+  AMQPConnectionError,
+  AMQPError,
+  ConsumerStatus,
+} from "rabbitmq-client";
