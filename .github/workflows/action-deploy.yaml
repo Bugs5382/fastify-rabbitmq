@@ -37,13 +37,13 @@ jobs:
         run: mkdir -p ./lib
 
       - name: Download the build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: cache
           path: ./
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: lts/*
           registry-url: 'https://registry.npmjs.org/'
@@ -61,7 +61,7 @@ jobs:
           fi
 
       - name: Publish to npm
-        uses: JS-DevTools/npm-publish@v3
+        uses: JS-DevTools/npm-publish@v4
         with:
           provenance: true
           token: ${{ secrets.NPM_TOKEN }}
@@ -80,7 +80,7 @@ jobs:
     steps:
       # - uses: hmarr/debug-action@v3
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: '${{ secrets.GITHUB_TOKEN }}'
           ref: ${{ env.GIT_BRANCH_TARGET }}
@@ -100,7 +100,7 @@ jobs:
           release-notes: ${{ github.event.release.body }}
 
       - name: Commit and Push Version Update
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore(release): ${{ github.event.release.tag_name }} [skip ci]"
 
