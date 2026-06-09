@@ -1,0 +1,73 @@
+name: PR Checks
+# Authoritative CI enforcement of what the local hooks check (hooks are advisory
+# and may not be installed): conventional PR title, no AI-tells/emoji in the
+# diff, and a PR body that follows the template + references an issue.
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  pr-title:
+    name: PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  pr-hygiene:
+    name: PR Hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan changed files
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Reuse the exact rules the local pre-commit hook uses.
+          source .claude/hooks/lib.sh
+          fail=0
+          while IFS= read -r f; do
+            [ -f "$f" ] || continue
+            case "$f" in
+              .git/*) continue ;;
+              *.png|*.jpg|*.jpeg|*.gif|*.pdf|*.ico|*.svg|*.woff|*.woff2|*.ttf|*.eot|*.zip|*.gz) continue ;;
+            esac
+            # Emoji allowed in Markdown and .github; blocked elsewhere.
+            case "$f" in
+              .github/*|*.md) : ;;
+              *) e="$(gov_find_emoji < "$f")"; [ -n "$e" ] && { echo "emoji not allowed in $f:"; echo "$e"; fail=1; } ;;
+            esac
+            # AI-tells blocked except in files that document the rule.
+            case "$f" in
+              CLAUDE.md|*/CLAUDE.md|.claude/*|*/.claude/*|.github/workflows/*|*forbidden-text.txt) : ;;
+              *) t="$(gov_find_text_tells < "$f")"; [ -n "$t" ] && { echo "AI-tell not allowed in $f:"; echo "$t"; fail=1; } ;;
+            esac
+          done < <(git diff --name-only --diff-filter=ACM "$BASE" "$HEAD")
+          [ "$fail" -eq 0 ] || { echo "pr-hygiene: remove the above before merging."; exit 1; }
+
+  pr-body:
+    name: PR Body
+    # Dependabot PRs have no template body or issue reference; skip them so the
+    # body check does not block their auto-merge.
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check body
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          fail=0
+          printf '%s' "$BODY" | grep -qiE '(closes|fixes|resolves|refs) #[0-9]+' \
+            || { echo "PR body must reference an issue (e.g. 'Closes #12')."; fail=1; }
+          printf '%s' "$BODY" | grep -qiE '##[[:space:]]*what' \
+            || { echo "PR body must follow the template (a 'What and why' section)."; fail=1; }
+          [ "$fail" -eq 0 ] || exit 1

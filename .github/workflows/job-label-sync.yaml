@@ -1,0 +1,23 @@
+name: Label Sync
+# Reconciles the repo's labels to the canonical set (.github/labels.yml):
+# creates/updates the canonical labels AND deletes any label not in the file,
+# so every repo carries exactly the standard set (no stale GitHub defaults or
+# leftover release labels).
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/labels.yml']
+permissions:
+  issues: write
+jobs:
+  labeler:
+    name: Sync labels
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crazy-max/ghaction-github-labeler@v5
+        with:
+          yaml-file: .github/labels.yml
+          skip-delete: false
+          dry-run: false
