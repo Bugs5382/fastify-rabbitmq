@@ -26,10 +26,11 @@ jobs:
         uses: actions/checkout@v6
 
       # Generate the lockfile BEFORE setup-node so its npm cache has something to
-      # key on. --legacy-peer-deps keeps CI in parity with local installs that
-      # rely on overrides / peer-dep workarounds.
+      # key on. No --legacy-peer-deps: it lets npm install an inconsistent tree
+      # (@the-rabbit-hole/eslint-config pulls @eslint/js@10 against eslint@9),
+      # which hangs eslint. The deps resolve cleanly without it.
       - name: Generate lockfile
-        run: npm install --package-lock-only --ignore-scripts --legacy-peer-deps
+        run: npm install --package-lock-only --ignore-scripts
 
       - name: Setup Node ${{ matrix.node-version }}
         uses: actions/setup-node@v6
@@ -38,7 +39,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --ignore-scripts --legacy-peer-deps
+        run: npm ci --ignore-scripts
 
       - name: Lint
         run: npm run lint
