@@ -3,20 +3,16 @@ on:
   workflow_dispatch:
   workflow_call:
   pull_request:
-    branches:
-      - main
-      - develop
-    types:
-      - opened
-      - reopened
-      - ready_for_review
-      - synchronize
-
-
+    branches: ["**"]
+    types: [opened, reopened, ready_for_review, synchronize]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
-
-  Build:
+  build:
+    name: 🧪 Build
     runs-on: ubuntu-latest
+    # The integration tests publish/consume against a real broker.
     services:
       rabbitmq:
         image: rabbitmq:4.0.2-alpine
@@ -26,38 +22,54 @@ jobs:
       matrix:
         node-version: [24.x, 'lts/*', 'latest']
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      - name: Test with Node ${{matrix.node-version}}
-        uses: actions/setup-node@v4
+      # Generate the lockfile BEFORE setup-node so its npm cache has something to
+      # key on. No --legacy-peer-deps: it lets npm install an inconsistent tree
+      # (@the-rabbit-hole/eslint-config pulls @eslint/js@10 against eslint@9),
+      # which hangs eslint. The deps resolve cleanly without it.
+      - name: Generate lockfile
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
         with:
-          node-version: ${{matrix.node-version}}
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
 
-      - name: Pre-Run
-        run: |
-          npm install --package-lock-only
-          npm install --ignore-scripts
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
 
-      - name: Run Tests and Lint
-        run: |
-          npm run lint
-          npm run test
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
         env:
           RABBITMQ_URL: amqp://guest:guest@localhost:5672
 
-      - name: Run Build
+      - name: Build
+        run: npm run build
+
+      # The published set is whatever package.json `files` lists (dist for an app,
+      # lib for a library) plus the fixed metadata. Derived, never hardcoded.
+      - name: Resolve published files
+        id: pkg
         run: |
-          npm run build
+          {
+            echo 'paths<<EOF'
+            echo 'package.json'
+            echo 'README.md'
+            echo 'LICENSE'
+            echo 'CHANGELOG.md'
+            node -p "(require('./package.json').files || ['dist']).join('\n')"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
       - name: Upload build artifact
         if: matrix.node-version == 'lts/*'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: cache
-          path: |
-            package.json
-            package-lock.json
-            README.md
-            LICENSE
-            CHANGELOG.md
-            dist
+          name: dist
+          path: ${{ steps.pkg.outputs.paths }}
