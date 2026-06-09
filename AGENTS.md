@@ -27,6 +27,10 @@ namespaces. The contract to respect:
 - **Namespaces for multiple brokers.** Register once per unique `namespace`; reach each at
   `app.rabbitmq.<namespace>`. Re-using a namespace throws `FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS`.
 - In a route, reach the instance via `request.server.rabbitmq`.
+- **Prefer encapsulating messaging in your own `fastify-plugin`.** Register this plugin there, declare
+  topology and publishers once at startup, expose an intent-named decorator (e.g. `app.events`) so
+  routes do not touch AMQP, and close consumers/publishers in an `onClose` hook. See the README recipe
+  "Encapsulate messaging in your own plugin".
 
 ## Layout
 
