@@ -92,7 +92,7 @@
     "tsdown": "^0.22.2"
   },
   "engines": {
-    "node": ">=20.11.0"
+    "node": ">=20.15.0"
   },
   "precommit": [
     "test",
