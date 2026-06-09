@@ -25,6 +25,7 @@ contribution from the outside.
    3. [RPC (request/response)](#3-rpc-requestresponse)
    4. [Declare exchanges, queues, and bindings](#4-declare-exchanges-queues-and-bindings)
    5. [Multiple connections with namespaces](#5-multiple-connections-with-namespaces)
+   6. [Encapsulate messaging in your own plugin](#6-encapsulate-messaging-in-your-own-plugin)
 4. [API Reference](#-api-reference-fastifyrabbitmq)
 5. [Plugin Options](#-plugin-options)
 6. [External Libraries](#-external-libraries)
@@ -135,6 +136,105 @@ const pubB = app.rabbitmq.b.createPublisher();
 ```
 
 Registering the same namespace twice throws `FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS`.
+
+### 6. Encapsulate messaging in your own plugin
+
+This is the pattern the plugin is built for, and the reason it is a plugin at all.
+Fastify's encapsulation lets you keep every messaging concern — the connection, the
+topology, the publishers, the consumers, and their shutdown — in **one plugin**, and
+expose just a small, intent-named surface (a decorator like `app.events`) to the rest
+of the app. Your routes publish business events; they never see exchanges, routing
+keys, or the AMQP client.
+
+Wrap it with [`fastify-plugin`](https://github.com/fastify/fastify-plugin) so the
+decorator is visible to sibling plugins and routes (without `fp`, the decorator would
+be trapped inside this plugin's encapsulation context):
+
+```ts
+// plugins/messaging.ts
+import fp from "fastify-plugin";
+import fastifyRabbitMQ from "fastify-rabbitmq";
+import type { Publisher } from "rabbitmq-client";
+
+declare module "fastify" {
+  interface FastifyInstance {
+    events: Publisher;
+  }
+}
+
+export default fp(
+  async (app) => {
+    // 1. Open the connection.
+    await app.register(fastifyRabbitMQ, {
+      connection: process.env.RABBITMQ_URL ?? "amqp://guest:guest@localhost",
+    });
+
+    // 2. Declare the topology and a publisher once, at startup. The publisher
+    //    re-declares these on every reconnect, so the exchange always exists
+    //    before the first send.
+    const publisher = app.rabbitmq.createPublisher({
+      confirm: true,
+      maxAttempts: 2,
+      exchanges: [{ exchange: "events", type: "topic" }],
+    });
+
+    // 3. Expose one intent-named sender. Routes call app.events.send(...) and
+    //    stay ignorant of AMQP.
+    app.decorate("events", publisher);
+
+    // 4. Run consumers as part of the app lifecycle. The consumer manages its
+    //    own channel and re-subscribes across reconnects.
+    const consumer = app.rabbitmq.createConsumer(
+      {
+        queue: "user-events",
+        queueOptions: { durable: true },
+        queueBindings: [{ exchange: "events", routingKey: "user.#" }],
+      },
+      async (msg) => {
+        app.log.info({ body: msg.body }, "user event");
+        // ...handle the message; throw to nack/retry...
+      },
+    );
+
+    // 5. Tear everything down with the app, so a restart or test closes
+    //    cleanly instead of leaking connections.
+    app.addHook("onClose", async () => {
+      await consumer.close();
+      await publisher.close();
+    });
+  },
+  { name: "messaging" },
+);
+```
+
+Register it once, then publish from anywhere:
+
+```ts
+import messaging from "./plugins/messaging";
+
+await app.register(messaging);
+
+app.post("/signup", async (request, reply) => {
+  await app.events.send(
+    { exchange: "events", routingKey: "user.created" },
+    request.body,
+  );
+  return { accepted: true };
+});
+```
+
+Why this shape works well:
+
+- **One place owns messaging.** Connection, topology, publishers, consumers, and
+  shutdown live together; the rest of the app depends only on `app.events`.
+- **Startup declares, routes send.** Topology is declared once at boot, so the first
+  request never races a missing exchange.
+- **Lifecycle is handled.** The `onClose` hook closes the consumer and publisher with
+  the app — important for graceful shutdown and for tests that start and stop Fastify
+  repeatedly.
+- **Swappable.** Because routes only know `app.events`, you can change brokers, add a
+  [namespace](#5-multiple-connections-with-namespaces), or stub the decorator in a test
+  without touching route code.
 
 ## 📖 API Reference (`fastify.rabbitmq`)
 
