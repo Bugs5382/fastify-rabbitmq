@@ -3,104 +3,31 @@ on:
   workflow_dispatch:
   workflow_call:
 
+# The composite action below restores prior versions, builds typedoc, and pushes
+# to gh-pages -- it needs contents: write.
 permissions:
   contents: write
-  actions: write
-  checks: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  History:
+  docs:
+    name: 📚 Publish Docs
     runs-on: ubuntu-latest
     steps:
-      - name: Get the gh-pages repo
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # The repo does not commit a lockfile; generate one so the action's
+      # setup-node npm cache and `npm ci` have a lockfile to key on. No
+      # --legacy-peer-deps: it resolves an inconsistent eslint tree (see
+      # action-test.yaml).
+      - name: Generate lockfile
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Publish versioned docs
+        uses: Bugs5382/typedoc-pages-action@v0.1.1
         with:
-          ref: gh-pages
-
-      - name: Tar the existing docs
-        run: |
-          mkdir -p ./docs
-          tar -cvf documentation.tar ./docs
-
-      - name: Create a document artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: documentation
-          path: documentation.tar
-
-  Build:
-    needs: History
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout src
-        uses: actions/checkout@v4
-
-      - name: Make Directory
-        run: mkdir -p ./docs
-
-      - name: Download the existing documents artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: documentation
-
-      - name: Tar Docs
-        run: tar -xf documentation.tar ./docs -C ./docs
-
-      - name: Build
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-
-      - name: Install NPM
-        run: |
-          npm install --package-lock-only --force
-          npm install --ignore-scripts --force
-
-      - name: Build Documents
-        run: npm run typedoc
-
-      - name: Tar the new docs
-        run: tar -cvf newdocumentation.tar ./docs
-
-      - name: Create a new document artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: newdocumentation
-          path: newdocumentation.tar
-
-  Commit:
-    needs: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the gh-pages repo
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-
-      - name: Checkout the gh-pages repo
-        if: env.exists == 'true'
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-
-      - name: Create Directory
-        run: mkdir -p ./docs
-
-      - name: Download the new documents artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: newdocumentation
-        continue-on-error: true
-
-      - name: Extract Tar
-        run: tar -xf newdocumentation.tar ./docs -C ./docs
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          allow_empty_commit: true
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./docs
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
