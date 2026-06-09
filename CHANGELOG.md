@@ -4,18 +4,18 @@
 
 ### What Changed 👀
 
-- chore(governance): sync shared governance from project-template @Bugs5382 (#110)
-
 #### 🚀 Features
 
 - build: migrate to tsdown and the shared eslint-config @Bugs5382 (#119)
 
 #### 📄 Documentation
 
+- docs: show how to encapsulate messaging in a Fastify plugin @Bugs5382 (#131)
 - docs: rewrite README to standard, add AGENTS.md, fix typedoc parent-export @Bugs5382 (#124)
 
 #### 🧩 Dependency Updates
 
+- build(deps): bump the production-dependencies group across 1 directory with 3 updates @[dependabot[bot]](https://github.com/apps/dependabot) (#121)
 - build: migrate to tsdown and the shared eslint-config @Bugs5382 (#119)
 
 ### Extra
