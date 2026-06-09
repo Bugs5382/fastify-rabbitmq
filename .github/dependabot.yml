@@ -9,8 +9,14 @@ updates:
     labels:
       - dependencies
     groups:
+      # rabbitmq-client is the wrapped upstream; keep it in its own PR so a bump
+      # is unambiguous and the auto-merge workflow can promote it to a minor (or
+      # major) release on its own.
+      rabbitmq-client:
+        patterns: ["rabbitmq-client"]
       production-dependencies:
         dependency-type: production
+        exclude-patterns: ["rabbitmq-client"]
         update-types: [patch, minor, major]
       development-dependencies:
         dependency-type: development
