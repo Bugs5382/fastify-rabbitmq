@@ -6,6 +6,7 @@
 
 #### 🚀 Features
 
+- feat: re-export the rabbitmq-client types from fastify-rabbitmq @Bugs5382 (#135)
 - build: migrate to tsdown and the shared eslint-config @Bugs5382 (#119)
 
 #### 🐛 Bug Fixes
