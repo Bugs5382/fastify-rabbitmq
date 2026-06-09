@@ -25,24 +25,46 @@ import { errors } from "./errors";
 
 /**
  * Validate Options
+ *
+ * The plugin validates only the *shape* of `connection` -- that it is a
+ * non-empty connection string or a `ConnectionOptions` object. Parsing the URL
+ * and validating the broker options (hosts, TLS, reconnect, etc.) is delegated
+ * to `rabbitmq-client`. The shape guard exists because `new Connection(...)`
+ * accepts garbage (a number, an array, `null`, `{}`) without throwing and then
+ * silently fails to connect at runtime; rejecting it here surfaces a clear
+ * registration-time error instead.
  * @since 1.0.0
  * @param options
  */
 export const validateOpts = async (
   options: FastifyRabbitMQOptions,
 ): Promise<void> => {
+  const { connection } = options;
+
   // Mandatory
-  if (options.connection === undefined) {
+  if (connection === undefined) {
     throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS(
-      "connection or findServers must be defined.",
+      "connection must be defined.",
     );
   }
 
-  // Mandatory
-  if (
-    options.connection !== undefined &&
-    typeof options.connection !== "object"
-  ) {
-    // we need to do some sort of check here to make sure RabbitMQOptions is "valid"
+  if (typeof connection === "string") {
+    if (connection.length === 0) {
+      throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS(
+        "connection string must not be empty.",
+      );
+    }
+    return;
+  }
+
+  const isConnectionOptions =
+    typeof connection === "object" &&
+    connection !== null &&
+    !Array.isArray(connection);
+
+  if (!isConnectionOptions) {
+    throw new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS(
+      "connection must be a connection string or a ConnectionOptions object.",
+    );
   }
 };

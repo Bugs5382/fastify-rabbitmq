@@ -24,7 +24,6 @@ import fastify, { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import fastifyRabbit from "../src";
-import { errors } from "../src/errors";
 
 let app: FastifyInstance;
 
@@ -38,183 +37,118 @@ afterEach(async () => {
   await app.close();
 });
 
+const DECORATED_METHODS = [
+  "acquire",
+  "close",
+  "createConsumer",
+  "createPublisher",
+  "createRPCClient",
+  "exchangeDeclare",
+  "queueDeclare",
+  "queueBind",
+  "ready",
+];
+
 describe("plugin fastify-rabbitmq tests", () => {
-  describe("registration tests", () => {
-    test("register - error out - no urls", async () => {
-      try {
+  describe("option validation", () => {
+    test("rejects a missing options object", async () => {
+      await expect(
         // @ts-expect-error registering with no options is a type error; this exercises the runtime validation.
-        await app.register(fastifyRabbit);
-      } catch (error) {
-        expect(error).toEqual(
-          new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS(
-            "connection or findServers must be defined.",
-          ),
-        );
-      }
+        app.register(fastifyRabbit).ready(),
+      ).rejects.toThrow("connection must be defined.");
     });
 
-    test("register - error out - connection not defined", async () => {
-      try {
+    test("rejects an undefined connection", async () => {
+      await expect(
         // @ts-expect-error connection: undefined is not assignable; this exercises the runtime guard.
-        await app.register(fastifyRabbit, { connection: undefined });
-      } catch (error) {
-        expect(error).toEqual(
-          new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS(
-            "connection or findServers must be defined.",
-          ),
-        );
-      }
+        app.register(fastifyRabbit, { connection: undefined }).ready(),
+      ).rejects.toThrow("connection must be defined.");
     });
 
-    test("register - error out - urls is not a string", async () => {
-      try {
+    test("rejects an empty connection string", async () => {
+      await expect(
+        app.register(fastifyRabbit, { connection: "" }).ready(),
+      ).rejects.toThrow("connection string must not be empty.");
+    });
+
+    test("rejects a non-string, non-object connection (number)", async () => {
+      await expect(
         // @ts-expect-error connection: 1 (a number) is not a valid type; this exercises the runtime validation.
-        await app.register(fastifyRabbit, {
-          connection: 1,
-        });
-      } catch (error) {
-        expect(error).toEqual(
-          new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS(
-            "urls must be defined.",
-          ),
-        );
-      }
+        app.register(fastifyRabbit, { connection: 1 }).ready(),
+      ).rejects.toThrow(
+        "connection must be a connection string or a ConnectionOptions object.",
+      );
     });
 
-    test("register - error out - urls less than 0", async () => {
-      try {
+    test("rejects an array connection", async () => {
+      await expect(
         // @ts-expect-error connection: [] (an array) is not a valid type; this exercises the runtime validation.
-        await app.register(fastifyRabbit, {
-          connection: [],
-        });
-      } catch (error) {
-        expect(error).toEqual(
-          new errors.FASTIFY_RABBIT_MQ_ERR_INVALID_OPTS(
-            "urls must contain one or more item in the array.",
-          ),
-        );
-      }
+        app.register(fastifyRabbit, { connection: [] }).ready(),
+      ).rejects.toThrow(
+        "connection must be a connection string or a ConnectionOptions object.",
+      );
+    });
+
+    test("rejects a null connection", async () => {
+      await expect(
+        // @ts-expect-error connection: null is not a valid type; this exercises the runtime validation.
+        app.register(fastifyRabbit, { connection: null }).ready(), // eslint-disable-line unicorn/no-null -- exercising the guard against a null connection
+      ).rejects.toThrow(
+        "connection must be a connection string or a ConnectionOptions object.",
+      );
     });
   });
 
-  describe("sanity checks", () => {
-    test("register - can't be registered twice", async () => {
-      try {
-        await app.register(fastifyRabbit, {
-          connection: RABBITMQ_URL,
-        });
+  describe("duplicate registration", () => {
+    test("rejects a second registration without a namespace", async () => {
+      // Queue both registrations; the duplicate is detected when the app boots,
+      // so the rejection surfaces from ready(), not from register().
+      app.register(fastifyRabbit, { connection: RABBITMQ_URL });
+      app.register(fastifyRabbit, { connection: RABBITMQ_URL });
 
-        await app.register(fastifyRabbit, {
-          connection: RABBITMQ_URL,
-        });
-      } catch (error) {
-        expect(error).toEqual(
-          new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS("Already registered."),
-        );
-      }
+      await expect(app.ready()).rejects.toThrow("Already registered.");
     });
 
-    test("register - can't be registered twice - namespace", async () => {
-      try {
-        await app.register(fastifyRabbit, {
-          connection: RABBITMQ_URL,
-          namespace: "error",
-        });
+    test("rejects re-using a namespace", async () => {
+      app.register(fastifyRabbit, {
+        connection: RABBITMQ_URL,
+        namespace: "error",
+      });
+      app.register(fastifyRabbit, {
+        connection: RABBITMQ_URL,
+        namespace: "error",
+      });
 
-        await app.register(fastifyRabbit, {
-          connection: RABBITMQ_URL,
-          namespace: "error",
-        });
-      } catch (error) {
-        expect(error).toEqual(
-          new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS(
-            "Already registered with namespace: error",
-          ),
-        );
-      }
+      await expect(app.ready()).rejects.toThrow(
+        "Already registered with namespace: error",
+      );
     });
   });
 
-  describe("common action tests", () => {
-    test("ensure basic properties are accessible", async () => {
-      try {
-        await app.register(fastifyRabbit, {
-          connection: "amqp://guest:guest@localhost",
-        });
-        expect(app.rabbitmq).toHaveProperty("acquire");
-        expect(app.rabbitmq).toHaveProperty("close");
-        expect(app.rabbitmq).toHaveProperty("createConsumer");
-        expect(app.rabbitmq).toHaveProperty("createPublisher");
-        expect(app.rabbitmq).toHaveProperty("createRPCClient");
-        expect(app.rabbitmq).toHaveProperty("exchangeDeclare");
-        expect(app.rabbitmq).toHaveProperty("queueDeclare");
-        expect(app.rabbitmq).toHaveProperty("queueBind");
-        expect(app.rabbitmq).toHaveProperty("ready");
+  describe("decorator", () => {
+    test("exposes the rabbitmq-client Connection on app.rabbitmq", async () => {
+      await app.register(fastifyRabbit, { connection: RABBITMQ_URL }).ready();
 
-        await app.rabbitmq.close();
-      } catch {
-        /* should not error */
+      for (const method of DECORATED_METHODS) {
+        expect(app.rabbitmq).toHaveProperty(method);
       }
+
+      await app.rabbitmq.close();
     });
 
-    test("ensure basic properties are accessible via namespace", async () => {
-      try {
-        await app
-          .register(fastifyRabbit, {
-            connection: RABBITMQ_URL,
-            namespace: "unittest",
-          })
-          .ready()
-          .then(async () => {
-            expect(app.rabbitmq.unittest).toHaveProperty("acquire");
-            expect(app.rabbitmq.unittest).toHaveProperty("close");
-            expect(app.rabbitmq.unittest).toHaveProperty("createConsumer");
-            expect(app.rabbitmq.unittest).toHaveProperty("createPublisher");
-            expect(app.rabbitmq.unittest).toHaveProperty("createRPCClient");
-            expect(app.rabbitmq.unittest).toHaveProperty("exchangeDeclare");
-            expect(app.rabbitmq.unittest).toHaveProperty("queueDeclare");
-            expect(app.rabbitmq.unittest).toHaveProperty("queueBind");
-            expect(app.rabbitmq.unittest).toHaveProperty("ready");
-          });
+    test("exposes the Connection under app.rabbitmq.<namespace>", async () => {
+      await app
+        .register(fastifyRabbit, {
+          connection: RABBITMQ_URL,
+          namespace: "unittest",
+        })
+        .ready();
 
-        await app.rabbitmq.unittest.close();
-      } catch {
-        /* should not error */
+      for (const method of DECORATED_METHODS) {
+        expect(app.rabbitmq.unittest).toHaveProperty(method);
       }
-    });
 
-    test("register with log level: debug", async () => {
-      try {
-        await app
-          .register(fastifyRabbit, {
-            connection: RABBITMQ_URL,
-            logLevel: "debug",
-          })
-          .ready()
-          .then(async () => {
-            expect(app.rabbitmq.unittest).toHaveProperty("createConsumer");
-            await app.rabbitmq.close();
-          });
-      } catch {
-        /* should not error */
-      }
-    });
-
-    test("register with log level: trace", async () => {
-      try {
-        await app
-          .register(fastifyRabbit, {
-            connection: RABBITMQ_URL,
-            logLevel: "trace",
-          })
-          .ready()
-          .then(async () => {
-            expect(app.rabbitmq.unittest).toHaveProperty("createConsumer");
-            await app.rabbitmq.close();
-          });
-      } catch {
-        /* should not error */
-      }
+      await app.rabbitmq.unittest.close();
     });
   });
 });
