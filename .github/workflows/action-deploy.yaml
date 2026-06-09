@@ -1,4 +1,9 @@
 name: Release and Publish
+# Fires when the maintainer publishes a (stable) GitHub Release. By then the
+# Release Manager (job-version-bump.yaml) has already bumped package.json and
+# written CHANGELOG.md on main, so this only re-tests, publishes to npm via
+# OIDC, and republishes the docs. Stable-only: prereleases are not shipped, and
+# there is no manual-dispatch path that could publish off a release.
 on:
   release:
     types:
@@ -6,104 +11,53 @@ on:
 
 permissions:
   contents: write
-  actions: write
-  checks: write
   id-token: write
 
 jobs:
   Test:
+    name: 🧪 Test
     uses: ./.github/workflows/action-test.yaml
 
-  Strip_Version:
-    runs-on: ubuntu-latest
-    outputs:
-      CLEAN_TAG: ${{ steps.set-output.outputs.CLEAN_TAG }}
-    steps:
-      - name: Strip "v" from Tag
-        id: set-output
-        run: echo "CLEAN_TAG=${GITHUB_EVENT_RELEASE_TAG_NAME#v}" >> $GITHUB_OUTPUT
-        env:
-          GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
-
   Publish:
+    name: 🚀 Publish
     runs-on: ubuntu-latest
-    outputs:
-      GIT_BRANCH_TARGET: ${{ steps.set-npm-tag.outputs.GIT_BRANCH_TARGET }}
-    needs: ['Test', 'Strip_Version']
-    env:
-      CLEAN_TAG: ${{ needs.Strip_Version.outputs.CLEAN_TAG }}
+    needs: [Test]
+    # id-token: write lets npm verify the OIDC token GitHub issues against the
+    # trusted publisher registered on npmjs.com -- no NPM_TOKEN.
     steps:
-      - name: Create Directory
-        run: mkdir -p ./lib
-
       - name: Download the build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
-          name: cache
+          name: dist
           path: ./
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: lts/*
           registry-url: 'https://registry.npmjs.org/'
 
-      - name: Update Version in Package.json
-        id: set-npm-tag
+      # OIDC trusted publishing + provenance require npm >= 11.5.1 (the LTS image
+      # ships 10.x).
+      - name: Upgrade npm
         run: |
-          npm version $CLEAN_TAG --no-git-tag-version
-          if [[ "$CLEAN_TAG" == *"beta"* ]]; then
-            echo "NPM_TAG=beta" >> $GITHUB_OUTPUT
-            echo "GIT_BRANCH_TARGET=develop" >> $GITHUB_OUTPUT
+          npm install -g npm@latest
+          npm --version
+
+      # The version is already in package.json (set by the Release Manager).
+      # Idempotent: skip if that exact version is already on the registry
+      # (partial-publish retry).
+      - name: Publish to npm
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          NAME=$(node -p "require('./package.json').name")
+          if npm view "${NAME}@${VERSION}" version >/dev/null 2>&1; then
+            echo "${NAME}@${VERSION} already published -- skipping."
           else
-            echo "NPM_TAG=latest" >> $GITHUB_OUTPUT
-            echo "GIT_BRANCH_TARGET=main" >> $GITHUB_OUTPUT
+            npm publish --provenance --access public --ignore-scripts
           fi
 
-      - name: Publish to npm
-        uses: JS-DevTools/npm-publish@v3
-        with:
-          provenance: true
-          token: ${{ secrets.NPM_TOKEN }}
-          tag: ${{ steps.set-npm-tag.outputs.NPM_TAG }}
-
-  Update_Repo:
-    runs-on: ubuntu-latest
-    needs: ['Test', 'Strip_Version', 'Publish']
-    permissions:
-      contents: write
-      actions: write
-      checks: write
-    env:
-      CLEAN_TAG: ${{ needs.Strip_Version.outputs.CLEAN_TAG }}
-      GIT_BRANCH_TARGET: ${{ needs.Publish.outputs.GIT_BRANCH_TARGET }}
-    steps:
-      # - uses: hmarr/debug-action@v3
-
-      - uses: actions/checkout@v4
-        with:
-          token: '${{ secrets.GITHUB_TOKEN }}'
-          ref: ${{ env.GIT_BRANCH_TARGET }}
-          sparse-checkout: |
-            package.json
-            CHANGELOG.md
-          sparse-checkout-cone-mode: false
-
-      - name: Update Version in Package.json
-        id: set-git-branch
-        run: npm version $CLEAN_TAG --no-git-tag-version
-
-      - name: Update Changelog
-        uses: stefanzweifel/changelog-updater-action@v1
-        with:
-          latest-version: ${{ github.event.release.name }}
-          release-notes: ${{ github.event.release.body }}
-
-      - name: Commit and Push Version Update
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "chore(release): ${{ github.event.release.tag_name }} [skip ci]"
-
   Document:
-    needs: ['Update_Repo', 'Publish']
+    name: 📚 Publish Docs
+    needs: [Publish]
     uses: ./.github/workflows/action-docs.yaml
