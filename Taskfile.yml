@@ -1,0 +1,19 @@
+version: '3'
+# go-task is the standard runner for every project (regardless of ecosystem).
+# It drives golic, the MIT license-header tool. golic ships built-in license
+# types, so only a .licignore is needed at the repo root.
+vars:
+  GOLIC_VERSION: v0.2.0
+  TEMPLATE_LIC: "mit"
+  COMMON_LIC: "2026 Shane Froebel"
+tasks:
+  license:
+    desc: Verify every source file carries the MIT license header (CI; never writes).
+    cmds:
+      - go install github.com/Bugs5382/golic/cmd/golic@{{.GOLIC_VERSION}}
+      - golic inject -t {{.TEMPLATE_LIC}} -c "{{.COMMON_LIC}}" --dry -x
+  license:fix:
+    desc: Inject the MIT header into any source file missing it.
+    cmds:
+      - go install github.com/Bugs5382/golic/cmd/golic@{{.GOLIC_VERSION}}
+      - golic inject -t {{.TEMPLATE_LIC}} -c "{{.COMMON_LIC}}"
