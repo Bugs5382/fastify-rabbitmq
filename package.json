@@ -61,9 +61,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@fastify/error": "^4.1.0",
-    "fastify-plugin": "^5.0.1",
-    "rabbitmq-client": "^5.0.4"
+    "@fastify/error": "^4.2.0",
+    "fastify-plugin": "^5.1.0",
+    "rabbitmq-client": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",
