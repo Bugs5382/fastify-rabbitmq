@@ -19,7 +19,9 @@ If you are an agent wiring this plugin into a Fastify app (not editing this repo
 namespaces. The contract to respect:
 
 - **Single entry point.** Register the plugin (`await app.register(fastifyRabbitMQ, opts)`) and use
-  the `app.rabbitmq` decorator. Do not import `rabbitmq-client` directly in app code.
+  the `app.rabbitmq` decorator. Do not import `rabbitmq-client` directly in app code — its types
+  (`Publisher`, `Consumer`, `RPCClient`, `Connection`, `ConnectionOptions`, `Envelope`, the message
+  types, and the AMQP error classes) are re-exported from `fastify-rabbitmq`.
 - **`app.rabbitmq` is the full Connection.** It exposes the underlying `rabbitmq-client` `Connection`
   API directly (`createPublisher`, `createConsumer`, `createRPCClient`, `exchangeDeclare`,
   `queueDeclare`, `queueBind`, `acquire`, `ready`, `close`) — nothing is wrapped away.
