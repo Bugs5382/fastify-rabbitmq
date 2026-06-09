@@ -1,5 +1,27 @@
 # Fastify RabbitMQ
 
+## v3.4.0 - 2026-06-09
+
+### What Changed 👀
+
+- chore(governance): sync shared governance from project-template @Bugs5382 (#110)
+
+#### 🚀 Features
+
+- build: migrate to tsdown and the shared eslint-config @Bugs5382 (#119)
+
+#### 📄 Documentation
+
+- docs: rewrite README to standard, add AGENTS.md, fix typedoc parent-export @Bugs5382 (#124)
+
+#### 🧩 Dependency Updates
+
+- build: migrate to tsdown and the shared eslint-config @Bugs5382 (#119)
+
+### Extra
+
+**Full Changelog**: https://github.com/Bugs5382/fastify-rabbitmq/compare/v3.3.0...v3.4.0
+
 ## v3.3.0 - 2025-05-31
 
 #### What Changed 👀
