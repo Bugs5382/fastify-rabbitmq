@@ -24,7 +24,6 @@ import fastify, { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import fastifyRabbit from "../src";
-import { errors } from "../src/errors";
 
 let app: FastifyInstance;
 
@@ -102,21 +101,20 @@ describe("plugin fastify-rabbitmq tests", () => {
 
   describe("duplicate registration", () => {
     test("rejects a second registration without a namespace", async () => {
-      await app.register(fastifyRabbit, { connection: RABBITMQ_URL });
-      await app.register(fastifyRabbit, { connection: RABBITMQ_URL });
+      // Queue both registrations; the duplicate is detected when the app boots,
+      // so the rejection surfaces from ready(), not from register().
+      app.register(fastifyRabbit, { connection: RABBITMQ_URL });
+      app.register(fastifyRabbit, { connection: RABBITMQ_URL });
 
-      await expect(app.ready()).rejects.toThrow(
-        new errors.FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS("Already registered.")
-          .message,
-      );
+      await expect(app.ready()).rejects.toThrow("Already registered.");
     });
 
     test("rejects re-using a namespace", async () => {
-      await app.register(fastifyRabbit, {
+      app.register(fastifyRabbit, {
         connection: RABBITMQ_URL,
         namespace: "error",
       });
-      await app.register(fastifyRabbit, {
+      app.register(fastifyRabbit, {
         connection: RABBITMQ_URL,
         namespace: "error",
       });
