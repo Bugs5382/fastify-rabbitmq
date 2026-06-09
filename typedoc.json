@@ -1,12 +1,21 @@
 {
-  "tsconfig": "src/tsconfig.esm.json",
-  "entryPoints": ["./src/index.ts"],
+  "tsconfig": "tsconfig.json",
+  "entryPoints": [
+    "./src/index.ts"
+  ],
   "githubPages": false,
   "includeVersion": true,
-  "plugin": ["@shipgirl/typedoc-plugin-versions"],
+  "plugin": [
+    "@shipgirl/typedoc-plugin-versions"
+  ],
   "out": "docs",
   "name": "Fastify RabbitMQ",
   "sidebarLinks": {
     "View source on GitHub": "https://github.com/Bugs5382/fastify-rabbitmq"
+  },
+  "externalSymbolLinkMappings": {
+    "rabbitmq-client": {
+      "*": "https://www.npmjs.com/package/rabbitmq-client"
+    }
   }
 }
