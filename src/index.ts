@@ -36,8 +36,7 @@ const decorateFastifyInstance = (
     }
 
     fastify.log.trace(
-      "[fastify-rabbitmq] Decorate Fastify with Namespace: %",
-      namespace,
+      `[fastify-rabbitmq] Decorate Fastify with Namespace: ${namespace}`,
     );
     fastify.rabbitmq[namespace] = connection;
   } else {
