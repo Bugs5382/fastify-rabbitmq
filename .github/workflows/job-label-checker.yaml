@@ -1,17 +1,37 @@
 name: Label Checker
-# Backstop: every PR must carry a categorizing label. The release-drafter
-# autolabeler supplies it automatically from the conventional-commit title.
+# Every PR must carry a categorizing label. The release-drafter autolabeler
+# derives it from the conventional-commit title; the check then confirms it.
+#
+# Labeling and the check live in ONE workflow on purpose. The autolabeler
+# applies the label with the default GITHUB_TOKEN, and GitHub does not fire new
+# workflow events (e.g. `labeled`) from GITHUB_TOKEN actions, so a separate
+# checker keyed on the `labeled` event would never re-run after the label was
+# added and would stay failed on a fresh PR. Running the check as a job that
+# `needs` the autolabel job guarantees the label exists in the same run.
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, reopened, edited, synchronize]
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
-  pull-requests: read
+  contents: read
+  pull-requests: write
 jobs:
+  autolabel:
+    name: Autolabel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply labels from PR title
+        uses: release-drafter/release-drafter@v6
+        with:
+          disable-releaser: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   categorizing-label:
     name: Categorizing label present
+    needs: [autolabel]
     runs-on: ubuntu-latest
     steps:
       - uses: danielchabr/pr-labels-checker@v3.3
