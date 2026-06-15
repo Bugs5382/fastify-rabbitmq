@@ -1,13 +1,18 @@
 name: Label Checker
-# Every PR must carry a categorizing label. The release-drafter autolabeler
-# derives it from the conventional-commit title; the check then confirms it.
+# Every PR must carry a categorizing label. This workflow derives the label from
+# the conventional-commit PR title and applies it, then confirms it is present.
 #
-# Labeling and the check live in ONE workflow on purpose. The autolabeler
-# applies the label with the default GITHUB_TOKEN, and GitHub does not fire new
-# workflow events (e.g. `labeled`) from GITHUB_TOKEN actions, so a separate
-# checker keyed on the `labeled` event would never re-run after the label was
-# added and would stay failed on a fresh PR. Running the check as a job that
-# `needs` the autolabel job guarantees the label exists in the same run.
+# Labeling and the check live in ONE workflow on purpose. The label is applied
+# with the default GITHUB_TOKEN, and GitHub does not fire new workflow events
+# (e.g. `labeled`) from GITHUB_TOKEN actions, so a separate checker keyed on the
+# `labeled` event would never re-run after the label was added and would stay
+# failed on a fresh PR. Running the check as a job that `needs` the autolabel job
+# guarantees the label is applied in the same run.
+#
+# The label is applied deterministically with `gh` rather than relying on
+# release-drafter's autolabeler, which does not reliably apply labels in this
+# configuration. The release-drafter.yml autolabeler block is still used at draft
+# time; this job is what guarantees a categorizing label on every PR.
 on:
   pull_request:
     types: [opened, reopened, edited, synchronize]
@@ -22,19 +27,67 @@ jobs:
     name: Autolabel
     runs-on: ubuntu-latest
     steps:
-      - name: Apply labels from PR title
-        uses: release-drafter/release-drafter@v7
-        with:
-          disable-releaser: true
+      # Map the conventional-commit prefix in the PR title to a categorizing
+      # label and apply it. Best-effort: Dependabot-triggered runs get a
+      # read-only GITHUB_TOKEN so the apply is skipped -- Dependabot already sets
+      # `dependencies` from dependabot.yml, so the check below still passes.
+      - name: Apply label from PR title
+        continue-on-error: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          # Derive the label from the conventional-commit type/prefix.
+          label=""
+          case "$TITLE" in
+            *"!:"*|*"BREAKING CHANGE"*|*"BREAKING-CHANGE"*) label="breaking" ;;
+            feat\(*\)!:*|feat!:*)                            label="breaking" ;;
+            feat:*|feat\(*\):*)                              label="enhancement" ;;
+            fix:*|fix\(*\):*)                                label="fix" ;;
+            perf:*|perf\(*\):*)                              label="performance" ;;
+            refactor:*|refactor\(*\):*)                      label="refactor" ;;
+            docs:*|docs\(*\):*)                              label="documentation" ;;
+            security:*|security\(*\):*)                      label="security" ;;
+            build:*|build\(*\):*|chore\(deps*\):*)           label="dependencies" ;;
+            ci:*|ci\(*\):*|test:*|test\(*\):*|style:*|style\(*\):*|chore:*|chore\(*\):*) label="skip-changelog" ;;
+            *) echo "PR title is not a recognized conventional-commit type; leaving labels alone."; exit 0 ;;
+          esac
+          echo "Applying label: $label"
+          gh api -X POST "repos/$REPO/issues/$PR/labels" -f "labels[]=$label" >/dev/null
 
   categorizing-label:
     name: Categorizing label present
     needs: [autolabel]
+    # Run even if autolabel was skipped/failed (e.g. a Dependabot read-only
+    # token); the label may already be present from the PR title or dependabot.yml.
+    if: always()
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
     steps:
-      - uses: danielchabr/pr-labels-checker@v3.3
-        with:
-          hasSome: breaking,enhancement,bug,fix,performance,refactor,changed,deprecated,removed,security,documentation,dependencies,skip-changelog
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+      # Poll the LIVE labels via the API rather than the trigger payload. The
+      # autolabel job above applies the label with the default GITHUB_TOKEN; that
+      # write takes a moment to be visible, and the `opened` event payload this
+      # run was triggered with never carries it. Retrying against the API closes
+      # that race so a fresh PR passes on the first run instead of needing a rerun.
+      - name: Verify a categorizing label is present
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          allowed="breaking enhancement bug fix performance refactor changed deprecated removed security documentation dependencies skip-changelog"
+          for attempt in 1 2 3 4 5 6; do
+            labels="$(gh api "repos/$REPO/issues/$PR/labels" --jq '.[].name' 2>/dev/null || true)"
+            for l in $labels; do
+              for a in $allowed; do
+                if [ "$l" = "$a" ]; then echo "Found categorizing label: $l"; exit 0; fi
+              done
+            done
+            echo "No categorizing label yet (attempt $attempt/6); waiting for the autolabeler..."
+            sleep 10
+          done
+          echo "No categorizing label present. Add one of: $allowed"
+          exit 1
