@@ -1,5 +1,19 @@
 # Fastify RabbitMQ
 
+## v3.4.1 - 2026-06-16
+
+### What Changed 👀
+
+- ci: Release Manager commits as the owner, not github-actions[bot] @Bugs5382 (#146)
+
+#### 🧩 Dependency Updates
+
+- build(deps): bump the github-actions group with 9 updates @[dependabot[bot]](https://github.com/apps/dependabot) (#143)
+
+### Extra
+
+**Full Changelog**: https://github.com/Bugs5382/fastify-rabbitmq/compare/v3.4.0...v3.4.1
+
 ## v3.4.0 - 2026-06-09
 
 ### What Changed 👀
