@@ -23,7 +23,7 @@ jobs:
         node-version: [24.x, 'lts/*', 'latest']
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Generate the lockfile BEFORE setup-node so its npm cache has something to
       # key on. No --legacy-peer-deps: it lets npm install an inconsistent tree

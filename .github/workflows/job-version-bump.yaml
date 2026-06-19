@@ -46,7 +46,7 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: 📂 Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           token: ${{ steps.app-token.outputs.token }}
           fetch-depth: 0
@@ -80,7 +80,7 @@ jobs:
 
       - name: 📤 Run Changelog Action
         if: steps.releasable.outputs.yes == 'true'
-        uses: bugs5382/changelog-updater-action@v0.3.2
+        uses: bugs5382/changelog-updater-action@v0.4.0
         with:
           tag: v${{ steps.drafter.outputs.resolved_version }}
           notes: ${{ steps.drafter.outputs.body }}
