@@ -1,6 +1,6 @@
 # Fastify RabbitMQ
 
-## v3.4.1 - 2026-06-16
+## v3.4.1 - 2026-06-20
 
 ### What Changed 👀
 
