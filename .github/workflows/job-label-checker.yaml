@@ -28,9 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Map the conventional-commit prefix in the PR title to a categorizing
-      # label and apply it. Best-effort: Dependabot-triggered runs get a
-      # read-only GITHUB_TOKEN so the apply is skipped -- Dependabot already sets
-      # `dependencies` from dependabot.yml, so the check below still passes.
+      # label and apply it. Best-effort (continue-on-error): the
+      # categorizing-label job below is the authoritative check.
       - name: Apply label from PR title
         continue-on-error: true
         env:
@@ -60,8 +59,8 @@ jobs:
   categorizing-label:
     name: Categorizing label present
     needs: [autolabel]
-    # Run even if autolabel was skipped/failed (e.g. a Dependabot read-only
-    # token); the label may already be present from the PR title or dependabot.yml.
+    # Run even if autolabel was skipped/failed; the label may already be present
+    # from the PR title.
     if: always()
     runs-on: ubuntu-latest
     permissions:

@@ -40,8 +40,6 @@ change-title-escapes: '\<*_&'
 # (the bracketed login is not a valid mention). Rewrite the common ones to a
 # real link so the credit is clickable instead of plain text.
 replacers:
-  - search: '/@dependabot\[bot\]/g'
-    replace: '[@dependabot](https://github.com/apps/dependabot)'
   - search: '/@github-actions\[bot\]/g'
     replace: '[@github-actions](https://github.com/apps/github-actions)'
 version-resolver:

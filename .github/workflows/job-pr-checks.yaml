@@ -56,9 +56,6 @@ jobs:
 
   pr-body:
     name: PR Body
-    # Dependabot PRs have no template body or issue reference; skip them so the
-    # body check does not block their auto-merge.
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Check body
