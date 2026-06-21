@@ -4,8 +4,6 @@
 
 ### What Changed 👀
 
-- ci: Release Manager commits as the owner, not github-actions[bot] @Bugs5382 (#146)
-
 #### 🧩 Dependency Updates
 
 - build(deps): bump the github-actions group with 9 updates @[dependabot[bot]](https://github.com/apps/dependabot) (#143)
@@ -73,8 +71,6 @@
 ## v3.1.0 - 2024-11-17
 
 #### What Changed 👀
-
-- ci: update workflows @Bugs5382 (#103)
 
 #### 🧩 Dependency Updates
 
