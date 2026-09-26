@@ -15,7 +15,7 @@ jobs:
     # The integration tests publish/consume against a real broker.
     services:
       rabbitmq:
-        image: rabbitmq:4.0.2-alpine
+        image: rabbitmq:4.3.6-alpine
         ports:
           - 5672:5672
     strategy:
