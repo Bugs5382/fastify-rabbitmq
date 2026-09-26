@@ -1,10 +1,12 @@
 # Fastify RabbitMQ
 
-## v3.4.1 - 2026-06-20
+## v3.4.1 - 2026-09-26
 
 ### What Changed 👀
 
-- ci: Release Manager commits as the owner, not github-actions[bot] @Bugs5382 (#146)
+#### 📄 Documentation
+
+- docs(readme): apply the lite emoji treatment @Bugs5382 (#158)
 
 #### 🧩 Dependency Updates
 
