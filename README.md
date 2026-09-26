@@ -59,6 +59,16 @@ await app.register(fastifyRabbitMQ, {
 Registering decorates the Fastify instance with `app.rabbitmq` — a live `rabbitmq-client`
 `Connection`. Use it to create publishers, consumers, and RPC clients, or to declare topology.
 
+The plugin owns the connection's lifecycle:
+
+- **`app.close()` closes the connection** (each one, with namespaces), so the process can exit.
+  Close your own consumers and publishers in an `onClose` hook, as in
+  [recipe 6](#6-encapsulate-messaging-in-your-own-plugin).
+- **Connection errors are logged, not thrown.** If the broker is down or drops the connection,
+  the error goes to `app.log.error` and `rabbitmq-client` keeps reconnecting in the background.
+  The app does not crash. Add your own `app.rabbitmq.on("error", ...)` listener if you need to
+  react to it.
+
 ## 🧩 Recipes
 
 ### 1. Publish a message
@@ -196,8 +206,9 @@ export default fp(
       },
     );
 
-    // 5. Tear everything down with the app, so a restart or test closes
-    //    cleanly instead of leaking connections.
+    // 5. Close the consumer and publisher with the app. The plugin then
+    //    closes the connection itself, after this hook has released the
+    //    channels, so app.close() resolves and the process can exit.
     app.addHook("onClose", async () => {
       await consumer.close();
       await publisher.close();
@@ -229,9 +240,9 @@ Why this shape works well:
   shutdown live together; the rest of the app depends only on `app.events`.
 - **Startup declares, routes send.** Topology is declared once at boot, so the first
   request never races a missing exchange.
-- **Lifecycle is handled.** The `onClose` hook closes the consumer and publisher with
-  the app — important for graceful shutdown and for tests that start and stop Fastify
-  repeatedly.
+- **Lifecycle is handled.** The `onClose` hook closes the consumer and publisher, and
+  the plugin closes the connection, all with `app.close()` — important for graceful
+  shutdown and for tests that start and stop Fastify repeatedly.
 - **Swappable.** Because routes only know `app.events`, you can change brokers, add a
   [namespace](#5-multiple-connections-with-namespaces), or stub the decorator in a test
   without touching route code.
@@ -254,8 +265,9 @@ methods you will use most:
 | `queueDeclare(params)` | Declare a queue. |
 | `queueBind(params)` | Bind a queue to an exchange. |
 | `acquire()` | Acquire a raw channel. |
-| `ready()` | Resolve once the connection is established. |
-| `close()` | Close the connection. |
+| `onConnect(timeout?)` | Resolve once the connection is established. |
+| `ready` | `true` while the connection is established and unblocked. |
+| `close()` | Close the connection. `app.close()` already does this for you. |
 
 The full option shapes for each come from `rabbitmq-client` — see [External Libraries](#-external-libraries).
 

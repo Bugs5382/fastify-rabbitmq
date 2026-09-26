@@ -96,12 +96,91 @@ const decorateFastifyInstance = (
 const fastifyRabbit = fp<FastifyRabbitMQOptions>(async (fastify, opts) => {
   await validateOpts(opts);
 
-  const { connection } = opts;
+  const { connection, namespace = "" } = opts;
+  // A label for log lines only. The connection string can carry credentials,
+  // so it is never logged.
+  const label = namespace === "" ? "(default)" : namespace;
 
+  fastify.log.debug(
+    "[fastify-rabbitmq] Creating connection for namespace %s",
+    label,
+  );
   const c = new RabbitMQConnection(connection);
 
+  watchConnection(fastify, c, label);
+
   decorateFastifyInstance(fastify, opts, c);
+
+  // Close the connection with the app (#164). Without this the socket (or the
+  // reconnect timer, when the broker is down) keeps the process alive after
+  // app.close(). Fastify runs onClose hooks last-registered first, and an app
+  // adds its hooks after registering this plugin, so its consumers and
+  // publishers have already released their channels when this runs.
+  fastify.addHook("onClose", async () => {
+    const started = Date.now();
+    fastify.log.debug(
+      "[fastify-rabbitmq] Closing connection for namespace %s",
+      label,
+    );
+    try {
+      await c.close();
+      fastify.log.info(
+        "[fastify-rabbitmq] Connection for namespace %s closed in %dms",
+        label,
+        Date.now() - started,
+      );
+    } catch (error) {
+      fastify.log.error(
+        { err: error },
+        "[fastify-rabbitmq] Failed to close connection for namespace %s",
+        label,
+      );
+    }
+  });
 });
+
+/**
+ * Log the connection's lifecycle events. The 'error' listener also keeps a
+ * refused or dropped connection from becoming an unhandled 'error' event,
+ * which would crash the process (#164). rabbitmq-client keeps retrying in the
+ * background, so an error here is reported, not fatal.
+ * @since 3.4.1
+ * @param fastify
+ * @param c
+ * @param label
+ */
+const watchConnection = (
+  fastify: FastifyInstance,
+  c: RabbitMQConnection,
+  label: string,
+): void => {
+  c.on("error", (err: unknown) => {
+    fastify.log.error(
+      { err },
+      "[fastify-rabbitmq] RabbitMQ connection error for namespace %s",
+      label,
+    );
+  });
+  c.on("connection", () => {
+    fastify.log.info(
+      "[fastify-rabbitmq] RabbitMQ connection established for namespace %s",
+      label,
+    );
+  });
+  c.on("connection.blocked", (reason: string) => {
+    fastify.log.warn(
+      "[fastify-rabbitmq] RabbitMQ connection blocked for namespace %s: %s",
+      label,
+      reason,
+    );
+  });
+  c.on("connection.unblocked", () => {
+    fastify.log.info(
+      "[fastify-rabbitmq] RabbitMQ connection unblocked for namespace %s",
+      label,
+    );
+  });
+};
 
 export default fastifyRabbit;
 
