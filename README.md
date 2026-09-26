@@ -1,6 +1,7 @@
-# 🐰 Fastify RabbitMQ
+# Fastify RabbitMQ 🐰
 
-A Fastify RabbitMQ plugin developed in pure TypeScript.
+> 📨 A Fastify RabbitMQ plugin developed in pure TypeScript.
+
 It wraps the [`rabbitmq-client`](https://www.npmjs.com/package/rabbitmq-client) package so a Fastify
 app can publish, consume, and RPC over RabbitMQ (AMQP 0-9-1).
 
@@ -15,7 +16,7 @@ contribution from the outside.
 
 > 🟢 **Requires Node.js ≥ 20.15.**
 
-## Table of Contents
+## 📑 Table of Contents
 
 1. [Install](#-install)
 2. [Basic Usage](#-basic-usage)
