@@ -6,6 +6,7 @@
 
 #### 🐛 Bug Fixes
 
+- fix(test): stop declaring transient non-exclusive queues so tests pass on RabbitMQ 4 @Bugs5382 (#165)
 - fix(build): keep source maps out of the npm package @Bugs5382 (#163)
 
 #### 📄 Documentation
