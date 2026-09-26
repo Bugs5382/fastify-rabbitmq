@@ -60,4 +60,6 @@ namespaces. The contract to respect:
   importing `rabbitmq-client` directly in app code.
 - Integration tests require a broker — run one locally (`docker run -p 5672:5672 rabbitmq:4-alpine`)
   or rely on CI's `rabbitmq` service; without it, the integration tests time out.
+- Test queues must be durable or exclusive. RabbitMQ 4.1+ refuses transient non-exclusive queues
+  (a consumer with no `queueOptions` declares one), and the RPC tests use `exclusive: true`.
 - See `CLAUDE.md` for branch/commit/PR rules; these are enforced by the git hooks in `.claude/hooks`.
