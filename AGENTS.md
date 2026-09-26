@@ -25,6 +25,9 @@ namespaces. The contract to respect:
 - **`app.rabbitmq` is the full Connection.** It exposes the underlying `rabbitmq-client` `Connection`
   API directly (`createPublisher`, `createConsumer`, `createRPCClient`, `exchangeDeclare`,
   `queueDeclare`, `queueBind`, `acquire`, `ready`, `close`) — nothing is wrapped away.
+- **The plugin owns the connection lifecycle.** An `onClose` hook closes each connection on
+  `app.close()`, and an `error` listener logs connection errors through `app.log` so a missing
+  broker does not crash the process. Do not call `app.rabbitmq.close()` by hand in app code.
 - **`connection` is required** — a connection string or a `rabbitmq-client` `ConnectionOptions`.
 - **Namespaces for multiple brokers.** Register once per unique `namespace`; reach each at
   `app.rabbitmq.<namespace>`. Re-using a namespace throws `FASTIFY_RABBIT_MQ_ERR_SETUP_ERRORS`.
