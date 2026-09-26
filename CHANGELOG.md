@@ -76,8 +76,6 @@
 
 #### What Changed 👀
 
-- ci: update workflows @Bugs5382 (#103)
-
 #### 🧩 Dependency Updates
 
 - feat: updated packages @Bugs5382 (#105)
