@@ -52,6 +52,10 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Fails if the tarball would ship source maps or non-runtime folders.
+      - name: Check package contents
+        run: npm run check:pack
+
       # The published set is whatever package.json `files` lists (dist for an app,
       # lib for a library) plus the fixed metadata. Derived, never hardcoded.
       - name: Resolve published files

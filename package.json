@@ -42,6 +42,7 @@
   ],
   "scripts": {
     "build": "tsdown && tsc --emitDeclarationOnly",
+    "check:pack": "node scripts/checkPack.mjs",
     "clean": "rm -rf coverage docs dist temp",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

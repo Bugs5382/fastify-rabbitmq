@@ -46,7 +46,10 @@ namespaces. The contract to respect:
 
 ## Build, test, lint
 
-- Build: `npm run build` (tsdown -> ESM+CJS in `dist/`; types via `tsc --emitDeclarationOnly`).
+- Build: `npm run build` (tsdown -> ESM+CJS in `dist/`; types via `tsc --emitDeclarationOnly`; no
+  source maps).
+- Package check: `npm run check:pack` after a build. It fails if `npm pack --dry-run` would ship a
+  `.map` file or a non-runtime folder (CI runs it in `action-test`).
 - Test: `npm test` (vitest). The **integration tests need a running RabbitMQ broker** at
   `RABBITMQ_URL` (default `amqp://guest:guest@localhost`); CI provides one via a `rabbitmq` service.
   The unit/registration tests run without a broker.
