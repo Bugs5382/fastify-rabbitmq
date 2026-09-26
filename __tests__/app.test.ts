@@ -99,6 +99,9 @@ describe("fastify-rabbitmq sample app tests", () => {
       sub = app.rabbitmq.createConsumer(
         {
           queue: LISTEN_RPC_NAME,
+          // RabbitMQ 4.1+ refuses transient non-exclusive queues (#162).
+          // Exclusive scopes the queue to this connection and drops it on close.
+          queueOptions: { exclusive: true },
         },
         async (_req: any, reply: any) => {
           await reply("pong");
@@ -187,6 +190,9 @@ describe("fastify-rabbitmq sample app tests", () => {
       sub = app.rabbitmq.unittest.createConsumer(
         {
           queue: LISTEN_RPC_NAME,
+          // RabbitMQ 4.1+ refuses transient non-exclusive queues (#162).
+          // Exclusive scopes the queue to this connection and drops it on close.
+          queueOptions: { exclusive: true },
         },
         async (_req: any, reply: any) => {
           await reply("pong");
