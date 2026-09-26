@@ -3,7 +3,7 @@
     "target": "ESNext",
     "module": "ESNext",
     "declaration": true,
-    "declarationMap": true,
+    "declarationMap": false,
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true,

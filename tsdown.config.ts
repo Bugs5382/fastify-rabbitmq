@@ -30,5 +30,7 @@ export default defineConfig({
   dts: false,
   entry: ["src/index.ts"],
   format: ["esm", "cjs"],
-  sourcemap: true,
+  // No source maps: they are not published (#161), and a bundle that
+  // references a missing map makes debuggers and bundlers warn.
+  sourcemap: false,
 });
