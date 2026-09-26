@@ -4,6 +4,10 @@
 
 ### What Changed 👀
 
+#### 🐛 Bug Fixes
+
+- fix(build): keep source maps out of the npm package @Bugs5382 (#163)
+
 #### 📄 Documentation
 
 - docs(readme): apply the lite emoji treatment @Bugs5382 (#158)
@@ -75,8 +79,6 @@
 ## v3.1.0 - 2024-11-17
 
 #### What Changed 👀
-
-- ci: update workflows @Bugs5382 (#103)
 
 #### 🧩 Dependency Updates
 

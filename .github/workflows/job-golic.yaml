@@ -29,8 +29,9 @@ jobs:
         uses: arduino/setup-task@v2
         with:
           version: 3.x
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # setup-task reads its token from this input, not env. Without it
+          # the release lookup hits the anonymous rate limit.
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify MIT headers
         run: |
           export PATH="${PATH}:$(go env GOPATH)/bin"
