@@ -1,10 +1,24 @@
 name: PR Checks
 # Authoritative CI enforcement of what the local hooks check (hooks are advisory
 # and may not be installed): conventional PR title, no AI-tells/emoji in the
-# diff, and a PR body that follows the template + references an issue.
+# diff, a PR body that follows the template + references an issue, and the
+# gitleaks secret scan.
+#
+# ONE job, with each check as a step. Each of these checks does a few seconds of
+# work, and GitHub bills every job for at least a full minute, so four separate
+# jobs cost four minutes per run where one job costs one. Every check step runs
+# with `!cancelled()`, so a failing check never hides the ones after it: the log
+# shows every failure, and the job fails if any step failed.
+#
+# Draft PRs are skipped; the run happens when the PR is marked ready. This is
+# the only workflow (with the label checker, which also reads the title) that
+# reacts to `edited`, so a title or body fix reruns one job, not the build. An
+# edit reruns every step, not just title and body: the new result replaces the
+# last one for the same commit, so skipping hygiene or gitleaks on an edit would
+# turn an earlier failure green.
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened]
+    types: [opened, edited, synchronize, reopened, ready_for_review]
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -12,22 +26,38 @@ permissions:
   contents: read
   pull-requests: read
 jobs:
-  pr-title:
-    name: PR Title
+  checks:
+    name: ✅ PR Checks
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: amannn/action-semantic-pull-request@v6
+      - name: 📝 PR Title
+        uses: amannn/action-semantic-pull-request@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  pr-hygiene:
-    name: PR Hygiene
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
+      - name: 📋 PR Body
+        if: ${{ !cancelled() }}
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          fail=0
+          printf '%s' "$BODY" | grep -qiE '(closes|fixes|resolves|refs) #[0-9]+' \
+            || { echo "PR body must reference an issue (e.g. 'Closes #12')."; fail=1; }
+          printf '%s' "$BODY" | grep -qiE '##[[:space:]]*what' \
+            || { echo "PR body must follow the template (a 'What and why' section)."; fail=1; }
+          [ "$fail" -eq 0 ] || exit 1
+
+      - name: Checkout
+        id: checkout
+        if: ${{ !cancelled() }}
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Scan changed files
+
+      - name: 🧼 PR Hygiene
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
@@ -43,7 +73,7 @@ jobs:
             esac
             # Emoji allowed in Markdown and .github; blocked elsewhere.
             case "$f" in
-              .github/*|*.md) : ;;
+              .github/*|*.md|NOTES.txt|*/NOTES.txt) : ;;
               *) e="$(gov_find_emoji < "$f")"; [ -n "$e" ] && { echo "emoji not allowed in $f:"; echo "$e"; fail=1; } ;;
             esac
             # AI-tells blocked except in files that document the rule.
@@ -54,17 +84,25 @@ jobs:
           done < <(git diff --name-only --diff-filter=ACM "$BASE" "$HEAD")
           [ "$fail" -eq 0 ] || { echo "pr-hygiene: remove the above before merging."; exit 1; }
 
-  pr-body:
-    name: PR Body
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check body
-        env:
-          BODY: ${{ github.event.pull_request.body }}
+      # Secret scan, no paths-ignore: a secret can land in any file, docs
+      # included. Hard failure: the scan exits non-zero on a finding. It runs the
+      # gitleaks CLI directly rather than gitleaks/gitleaks-action@v2, which needs
+      # a paid GITLEAKS_LICENSE for organization-owned repos; the CLI is free
+      # everywhere and matches the `gitleaks detect` repos run locally.
+      - name: Install gitleaks
+        id: gitleaks-install
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
         run: |
-          fail=0
-          printf '%s' "$BODY" | grep -qiE '(closes|fixes|resolves|refs) #[0-9]+' \
-            || { echo "PR body must reference an issue (e.g. 'Closes #12')."; fail=1; }
-          printf '%s' "$BODY" | grep -qiE '##[[:space:]]*what' \
-            || { echo "PR body must follow the template (a 'What and why' section)."; fail=1; }
-          [ "$fail" -eq 0 ] || exit 1
+          VERSION="8.30.0"
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+          gitleaks version
+
+      - name: 🔒 Gitleaks (secret scan)
+        if: ${{ !cancelled() && steps.gitleaks-install.outcome == 'success' }}
+        run: |
+          # Honor a repo-local .gitleaks.toml if present; scan the full tree.
+          # An array keeps the optional flag pair intact without word splitting.
+          args=(detect --source . --redact --verbose --no-banner)
+          if [ -f .gitleaks.toml ]; then args+=(--config .gitleaks.toml); fi
+          gitleaks "${args[@]}"

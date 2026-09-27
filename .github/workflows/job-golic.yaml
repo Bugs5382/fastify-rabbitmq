@@ -2,13 +2,15 @@ name: GoLic
 # Verify every source file carries the MIT license header. golic (Bugs5382's own
 # tool) is run through go-task (`task license`) -- the standard runner for every
 # project. `golic inject --dry -x` fails the check if a header is missing; it never
-# modifies files. Docs (**.md) are skipped -- they carry no header.
+# modifies files.
+#
+# Pull requests only, and not while the PR is a draft. There is no rerun on push
+# to main: the PR run already checked the tree being merged (see "CI and Actions
+# minutes" in CLAUDE.md for the ruleset setting that keeps that true).
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [main]
-    paths-ignore: ['**.md']
+    types: [opened, synchronize, reopened, ready_for_review]
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -17,7 +19,9 @@ permissions:
 jobs:
   golic:
     name: 🔏 License headers
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -34,5 +38,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify MIT headers
         run: |
-          export PATH="${PATH}:$(go env GOPATH)/bin"
+          # Assign first, then export, so a failing `go env` is not masked.
+          gobin="$(go env GOPATH)/bin"
+          export PATH="${PATH}:${gobin}"
           task license

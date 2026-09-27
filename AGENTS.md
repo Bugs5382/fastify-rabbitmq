@@ -69,3 +69,4 @@ namespaces. The contract to respect:
 - Test queues must be durable or exclusive. RabbitMQ 4.1+ refuses transient non-exclusive queues
   (a consumer with no `queueOptions` declares one), and the RPC tests use `exclusive: true`.
 - See `CLAUDE.md` for branch/commit/PR rules; these are enforced by the git hooks in `.claude/hooks`.
+- Open every PR as a draft. CI skips drafts, so run the full checks locally, push once they pass, and mark the PR ready when the work is finished; see CLAUDE.md "CI and Actions minutes".
