@@ -20,6 +20,40 @@ the governance below is shared across all repos created that way.
   glyphs/emoji, no session framing.
 - Local design notes live in a non-tracked `plan/` folder; delete a note when its work is done.
 
+## CI and Actions minutes
+
+GitHub bills every job for at least one full minute, and a private org's included minutes run out
+fast during a wave of PRs. The shipped workflows are shaped around that:
+
+- **Drafts run nothing.** PR workflows skip draft PRs and run on `ready_for_review`, `opened`,
+  `synchronize` and `reopened`. Open a PR as a draft, run the full checks locally, push once they
+  pass, and mark it ready when the work is finished. That starts one CI run. After it is ready,
+  push only real fixes, batched into one push.
+- **One job for the small checks.** PR Title, PR Body, PR Hygiene and the gitleaks secret scan are
+  steps of one `✅ PR Checks` job (`job-pr-checks.yaml`). Every step runs even when an earlier one
+  fails, so the log shows every failure. This job and the label checker are the only workflows
+  that react to `edited`: a title or body fix reruns them, not the build.
+- **Pull requests only.** Test (lint, tests, build, package check), GoLic and the licence check
+  run on pull requests, not on push to `main`. The squash merge lands the tree the PR run already
+  tested. Only the release workflows run on `main` or a release: Release Manager
+  (`job-version-bump.yaml`, on push to `main`), and Release and Publish (`action-deploy.yaml`, on a
+  published release), which reruns Test, publishes to npm and calls Publish Docs
+  (`action-docs.yaml`).
+- **Keep the PR run honest:** the PR run covers the merged code only when the branch is up to date
+  with `main` before it merges. In the branch ruleset, add **Require status checks to pass** with
+  the repo's check names and turn on **Require branches to be up to date before merging** (API:
+  the `required_status_checks` rule with `strict_required_status_checks_policy: true`; classic
+  branch protection: `required_status_checks.strict: true`). The setting only exists alongside
+  required checks. Use GitHub's "Update branch" when a PR falls behind.
+- **No no-op jobs.** The licence check ships per ecosystem. This repo has a root `package.json` and
+  no `go.mod`, so it carries only `job-license-check-npm.yaml`.
+- **Every job has a `timeout-minutes`** (10 for small checks, 15 to 30 for builds, scans and
+  releases), so a hung job stops long before GitHub's 360-minute default. Jobs that call a reusable
+  workflow (`uses:`) cannot take one; the called workflow's jobs carry it.
+- **Required checks:** if the ruleset or branch protection lists required checks, use the job
+  names: `✅ PR Checks` replaces `PR Title`, `PR Body`, `PR Hygiene` and `Gitleaks (secret scan)`.
+
+
 ## Workflow
 
 Issue (from a template; free-form issues are disabled) -> for sequential / multi-step work, a parent

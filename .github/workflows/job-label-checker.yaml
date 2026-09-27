@@ -13,9 +13,13 @@ name: Label Checker
 # release-drafter's autolabeler, which does not reliably apply labels in this
 # configuration. The release-drafter.yml autolabeler block is still used at draft
 # time; this job is what guarantees a categorizing label on every PR.
+#
+# Draft PRs are skipped; the label is applied when the PR is marked ready. The
+# label comes from the title, so this workflow keeps `edited` (a retitled PR is
+# relabeled); the build and security workflows do not react to edits.
 on:
   pull_request:
-    types: [opened, reopened, edited, synchronize]
+    types: [opened, reopened, edited, synchronize, ready_for_review]
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -24,8 +28,10 @@ permissions:
   pull-requests: write
 jobs:
   autolabel:
-    name: Autolabel
+    name: 🏷️ Autolabel
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       # Map the conventional-commit prefix in the PR title to a categorizing
       # label and apply it. Best-effort (continue-on-error): the
@@ -38,11 +44,12 @@ jobs:
           REPO: ${{ github.repository }}
           TITLE: ${{ github.event.pull_request.title }}
         run: |
-          # Derive the label from the conventional-commit type/prefix.
+          # Derive the label from the conventional-commit type/prefix. The first
+          # pattern already covers every `<type>!:` and `<type>(scope)!:` title,
+          # feat included, so there is no separate feat-breaking arm.
           label=""
           case "$TITLE" in
             *"!:"*|*"BREAKING CHANGE"*|*"BREAKING-CHANGE"*) label="breaking" ;;
-            feat\(*\)!:*|feat!:*)                            label="breaking" ;;
             feat:*|feat\(*\):*)                              label="enhancement" ;;
             fix:*|fix\(*\):*)                                label="fix" ;;
             perf:*|perf\(*\):*)                              label="performance" ;;
@@ -57,12 +64,13 @@ jobs:
           gh api -X POST "repos/$REPO/issues/$PR/labels" -f "labels[]=$label" >/dev/null
 
   categorizing-label:
-    name: Categorizing label present
+    name: ✅ Categorizing label present
     needs: [autolabel]
     # Run even if autolabel was skipped/failed; the label may already be present
-    # from the PR title.
-    if: always()
+    # from the PR title. Drafts are still skipped.
+    if: always() && github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       pull-requests: read
     steps:
