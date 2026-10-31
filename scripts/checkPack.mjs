@@ -43,7 +43,9 @@ const out = execFileSync(
     stdio: ["ignore", "pipe", "inherit"],
   },
 );
-const [pack] = JSON.parse(out);
+// npm 12 prints an object keyed by package name; earlier versions print an array.
+const parsed = JSON.parse(out);
+const [pack] = Array.isArray(parsed) ? parsed : Object.values(parsed);
 
 console.log(
   `${pack.name}@${pack.version}: ${pack.entryCount} files, ` +
