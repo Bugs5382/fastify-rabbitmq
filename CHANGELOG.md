@@ -1,5 +1,17 @@
 # Fastify RabbitMQ
 
+## v3.4.2 - 2026-11-01
+
+### What Changed 👀
+
+#### 🐛 Bug Fixes
+
+- fix(ci): read npm pack output from npm 12 in the pack checks @Bugs5382 (#174)
+
+### Extra
+
+**Full Changelog**: https://github.com/Bugs5382/fastify-rabbitmq/compare/v3.4.1...v3.4.2
+
 ## v3.4.1 - 2026-09-26
 
 ### What Changed 👀
