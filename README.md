@@ -256,18 +256,18 @@ Why this shape works well:
 `app.rabbitmq` is a `rabbitmq-client` `Connection` (and, with namespaces, an index of them). The
 methods you will use most:
 
-| Method | Description |
-|---|---|
-| `createPublisher(options?)` | Create a `Publisher` (`.send(routingKey, body)`). |
+| Method                             | Description                                                            |
+| ---------------------------------- | ---------------------------------------------------------------------- |
+| `createPublisher(options?)`        | Create a `Publisher` (`.send(routingKey, body)`).                      |
 | `createConsumer(options, handler)` | Create a `Consumer` bound to a queue; `handler(msg)` runs per message. |
-| `createRPCClient(options?)` | Create an RPC client (`.send(queue, body)` returns the reply). |
-| `exchangeDeclare(params)` | Declare an exchange. |
-| `queueDeclare(params)` | Declare a queue. |
-| `queueBind(params)` | Bind a queue to an exchange. |
-| `acquire()` | Acquire a raw channel. |
-| `onConnect(timeout?)` | Resolve once the connection is established. |
-| `ready` | `true` while the connection is established and unblocked. |
-| `close()` | Close the connection. `app.close()` already does this for you. |
+| `createRPCClient(options?)`        | Create an RPC client (`.send(queue, body)` returns the reply).         |
+| `exchangeDeclare(params)`          | Declare an exchange.                                                   |
+| `queueDeclare(params)`             | Declare a queue.                                                       |
+| `queueBind(params)`                | Bind a queue to an exchange.                                           |
+| `acquire()`                        | Acquire a raw channel.                                                 |
+| `onConnect(timeout?)`              | Resolve once the connection is established.                            |
+| `ready`                            | `true` while the connection is established and unblocked.              |
+| `close()`                          | Close the connection. `app.close()` already does this for you.         |
 
 The full option shapes for each come from `rabbitmq-client` — see [External Libraries](#-external-libraries).
 

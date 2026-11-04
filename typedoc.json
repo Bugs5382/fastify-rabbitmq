@@ -1,13 +1,9 @@
 {
   "tsconfig": "tsconfig.json",
-  "entryPoints": [
-    "./src/index.ts"
-  ],
+  "entryPoints": ["./src/index.ts"],
   "githubPages": false,
   "includeVersion": true,
-  "plugin": [
-    "@shipgirl/typedoc-plugin-versions"
-  ],
+  "plugin": ["@shipgirl/typedoc-plugin-versions"],
   "out": "docs",
   "name": "Fastify RabbitMQ",
   "sidebarLinks": {
