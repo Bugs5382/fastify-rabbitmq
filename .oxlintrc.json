@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": ["./node_modules/@bugs5382/node-oxlint-config/configs/base.json"],
+  "ignorePatterns": ["dist/**", "lib/**", "coverage/**", "docs/**", "temp/**"],
+  "rules": {
+    "typescript/no-explicit-any": "off",
+    "unicorn-js/prevent-abbreviations": "off",
+    "import/no-default-export": "off",
+    "unicorn/prefer-module": "off",
+    "eslint/func-style": "off"
+  }
+}

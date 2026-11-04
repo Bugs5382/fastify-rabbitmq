@@ -56,7 +56,7 @@ namespaces. The contract to respect:
 - Test: `npm test` (vitest). The **integration tests need a running RabbitMQ broker** at
   `RABBITMQ_URL` (default `amqp://guest:guest@localhost`); CI provides one via a `rabbitmq` service.
   The unit/registration tests run without a broker.
-- Lint: `npm run lint` (the shared `@the-rabbit-hole/eslint-config`); `npm run lint:fix` to autofix.
+- Lint: `npm run lint` (Oxlint, with `@bugs5382/node-oxlint-config`); `npm run format` runs oxfmt; `npm run lint:fix` to autofix.
 - License headers: `task license` verifies the MIT header (CI); `task license:fix` injects it.
 - Docs: `npm run typedoc`.
 
